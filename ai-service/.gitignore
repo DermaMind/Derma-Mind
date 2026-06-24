@@ -1,0 +1,9 @@
+.env
+derma_env/
+Dataset/
+images/
+__pycache__/
+*.pth
+.ipynb_checkpoints/
+*.ipynb
+kaggle.json

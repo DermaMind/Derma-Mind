@@ -1,0 +1,1065 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DermaMind v3 — AI Skin Analysis + ChatBot</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #f0f4f8;
+        --surface: #fff;
+        --surface2: #f8fafc;
+        --border: #e2e8f0;
+        --primary: #0a6e6e;
+        --primary-light: #e6f4f4;
+        --primary-dark: #065252;
+        --accent: #00b4a6;
+        --text: #1a2332;
+        --text-muted: #64748b;
+        --text-light: #94a3b8;
+        --shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 4px 16px rgba(0, 0, 0, 0.04);
+        --radius: 12px;
+        --radius-sm: 8px;
+      }
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      body {
+        font-family: "IBM Plex Sans Arabic", sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        min-height: 100vh;
+        direction: rtl;
+      }
+      header {
+        background: var(--primary);
+        padding: 0 2rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        height: 64px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        position: sticky;
+        top: 0;
+        z-index: 100;
+      }
+      .logo { display: flex; align-items: center; gap: 10px; color: #fff; }
+      .logo-icon {
+        width: 36px; height: 36px;
+        background: rgba(255,255,255,0.15);
+        border-radius: 8px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 18px;
+      }
+      .logo-text { font-size: 18px; font-weight: 600; }
+      .logo-sub  { font-size: 11px; opacity: 0.7; }
+      .header-badge {
+        background: rgba(255,255,255,0.15);
+        color: #fff; font-size: 12px;
+        padding: 4px 12px; border-radius: 99px;
+        border: 1px solid rgba(255,255,255,0.2);
+      }
+      main {
+        max-width: 1200px; margin: 0 auto;
+        padding: 1.5rem;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.5rem;
+        align-items: start;
+      }
+      .card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        overflow: hidden;
+      }
+      .card-header {
+        padding: 0.875rem 1.25rem;
+        border-bottom: 1px solid var(--border);
+        display: flex; align-items: center; gap: 8px;
+      }
+      .card-header h2 { font-size: 13px; font-weight: 600; }
+      .card-header .icon {
+        width: 26px; height: 26px;
+        background: var(--primary-light);
+        border-radius: 6px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 13px;
+      }
+      .card-body { padding: 1.25rem; }
+      .upload-zone {
+        border: 2px dashed var(--border);
+        border-radius: var(--radius-sm);
+        padding: 1.5rem 1rem;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.2s;
+        background: var(--surface2);
+        position: relative;
+      }
+      .upload-zone:hover,
+      .upload-zone.dragover {
+        border-color: var(--accent);
+        background: var(--primary-light);
+      }
+      .upload-zone input[type="file"] {
+        position: absolute; inset: 0;
+        opacity: 0; cursor: pointer;
+        width: 100%; height: 100%;
+      }
+      .upload-icon { font-size: 28px; margin-bottom: 6px; display: block; }
+      .upload-title { font-size: 13px; font-weight: 500; margin-bottom: 3px; }
+      .upload-sub   { font-size: 11px; color: var(--text-muted); }
+      .preview-wrap {
+        display: none; margin-top: 1rem;
+        border-radius: var(--radius-sm); overflow: hidden;
+        border: 1px solid var(--border); position: relative;
+      }
+      .preview-wrap img {
+        width: 100%; max-height: 200px;
+        object-fit: cover; display: block;
+      }
+      .preview-remove {
+        position: absolute; top: 8px; left: 8px;
+        background: rgba(0,0,0,0.6); color: #fff;
+        border: none; border-radius: 6px;
+        padding: 4px 8px; font-size: 11px;
+        cursor: pointer; font-family: inherit;
+      }
+      .btn-analyze {
+        width: 100%; margin-top: 1rem; padding: 11px;
+        background: var(--primary); color: #fff;
+        border: none; border-radius: var(--radius-sm);
+        font-size: 13px; font-weight: 600; font-family: inherit;
+        cursor: pointer;
+        display: flex; align-items: center; justify-content: center; gap: 8px;
+        transition: background 0.2s;
+      }
+      .btn-analyze:hover:not(:disabled) { background: var(--primary-dark); }
+      .btn-analyze:disabled { opacity: 0.5; cursor: not-allowed; }
+      .error-box {
+        display: none; margin-top: 0.75rem;
+        padding: 8px 12px; background: #fee2e2;
+        border-radius: var(--radius-sm);
+        font-size: 12px; color: #991b1b;
+      }
+
+      /* ── Loading / Empty ────────────────────────── */
+      .loading {
+        display: none; text-align: center; padding: 2rem;
+      }
+      .spinner {
+        width: 36px; height: 36px;
+        border: 3px solid var(--border);
+        border-top-color: var(--accent);
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+        margin: 0 auto 10px;
+      }
+      @keyframes spin { to { transform: rotate(360deg); } }
+      .loading p { font-size: 12px; color: var(--text-muted); }
+      .empty-state {
+        text-align: center; padding: 2rem 1rem;
+        color: var(--text-muted);
+      }
+      .empty-state .empty-icon {
+        font-size: 36px; margin-bottom: 10px; opacity: 0.4;
+      }
+      .empty-state p { font-size: 12px; line-height: 1.6; }
+
+      /* ── Step Progress Bar ──────────────────────── */
+      .steps-bar {
+        display: none;
+        align-items: center;
+        padding: 0.75rem 1.25rem;
+        border-bottom: 1px solid var(--border);
+        background: var(--surface2);
+      }
+      .step-item {
+        display: flex; align-items: center; gap: 6px; flex: 1;
+      }
+      .step-circle {
+        width: 26px; height: 26px;
+        border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 11px; font-weight: 600;
+        background: var(--border);
+        color: var(--text-muted);
+        flex-shrink: 0;
+        transition: all 0.3s;
+      }
+      .step-circle.active { background: var(--primary); color: #fff; }
+      .step-circle.done   { background: var(--accent); color: #fff; }
+      .step-label { font-size: 10px; color: var(--text-muted); }
+      .step-label.active { font-weight: 600; color: var(--primary); }
+      .step-line {
+        flex: 1; height: 2px;
+        background: var(--border);
+        transition: background 0.3s;
+      }
+      .step-line.done { background: var(--accent); }
+
+      /* ── Questions Section ──────────────────────── */
+      .questions-wrap { display: none; }
+      .questions-intro {
+        padding: 0.75rem 1.25rem;
+        font-size: 12px; color: var(--text-muted);
+        border-bottom: 1px solid var(--border);
+        background: var(--primary-light);
+        display: flex; align-items: center; gap: 6px;
+      }
+      .questions-list {
+        padding: 1rem 1.25rem;
+        display: flex; flex-direction: column; gap: 0.75rem;
+        max-height: 420px; overflow-y: auto;
+      }
+      .questions-list::-webkit-scrollbar { width: 4px; }
+      .questions-list::-webkit-scrollbar-thumb {
+        background: var(--border); border-radius: 99px;
+      }
+      .question-card {
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        overflow: hidden;
+      }
+      .question-text {
+        padding: 8px 12px;
+        background: var(--surface2);
+        font-size: 12px; font-weight: 600;
+        border-bottom: 1px solid var(--border);
+        line-height: 1.5;
+      }
+      .options-group {
+        padding: 8px 12px 4px;
+        display: flex; flex-direction: column;
+      }
+      .option-btn {
+        display: block;
+        width: 100%;
+        text-align: right;
+        padding: 10px 14px;
+        margin-bottom: 8px;
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        cursor: pointer;
+        font-family: inherit;
+        font-size: 13px;
+        color: var(--text);
+        transition: all 0.2s;
+      }
+      .option-btn:hover {
+        border-color: var(--accent);
+        background: var(--primary-light);
+      }
+      .option-btn.selected {
+        border-color: var(--primary);
+        background: var(--primary-light);
+        color: var(--primary-dark);
+        font-weight: 600;
+      }
+      .btn-submit {
+        width: calc(100% - 2.5rem);
+        margin: 0 1.25rem 1.25rem;
+        padding: 11px;
+        background: var(--accent); color: #fff;
+        border: none; border-radius: var(--radius-sm);
+        font-size: 13px; font-weight: 600; font-family: inherit;
+        cursor: pointer;
+        display: flex; align-items: center; justify-content: center; gap: 8px;
+        transition: background 0.2s;
+      }
+      .btn-submit:hover:not(:disabled) { background: var(--primary); }
+      .btn-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+
+      /* ── Result Section ─────────────────────────── */
+      .result-wrap { display: none; }
+      .result-header {
+        display: flex; align-items: center; gap: 12px;
+        padding: 1rem 1.25rem;
+        border-bottom: 1px solid var(--border);
+      }
+      .result-icon {
+        width: 42px; height: 42px;
+        border-radius: 10px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 20px; flex-shrink: 0;
+        background: var(--primary-light);
+      }
+      .result-name-ar  { font-size: 17px; font-weight: 600; }
+      .result-name-en  {
+        font-size: 11px; color: var(--text-muted);
+        font-family: "IBM Plex Mono", monospace; margin-top: 2px;
+      }
+      .conf-level-badge {
+        display: inline-flex; align-items: center; gap: 4px;
+        padding: 3px 9px; border-radius: 99px;
+        font-size: 11px; font-weight: 500; margin-top: 4px;
+      }
+      .conf-high   { background: #dcfce7; color: #166534; }
+      .conf-medium { background: #fef3c7; color: #92400e; }
+      .conf-low    { background: #fee2e2; color: #991b1b; }
+      .insight-box {
+        margin: 0.875rem 1.25rem 0;
+        padding: 10px 14px;
+        background: #f0fdf4;
+        border-radius: var(--radius-sm);
+        border-right: 3px solid #22c55e;
+        font-size: 12px; color: #14532d;
+        line-height: 1.7;
+      }
+      .care-box {
+        margin: 0.5rem 1.25rem 0.75rem;
+        padding: 10px 14px;
+        background: #f0f9ff;
+        border-radius: var(--radius-sm);
+        border-right: 3px solid var(--accent);
+        font-size: 12px; color: #0c4a6e;
+        line-height: 1.7;
+      }
+      .box-title {
+        font-size: 10px; font-weight: 600;
+        text-transform: uppercase; letter-spacing: 0.5px;
+        margin-bottom: 5px; opacity: 0.65;
+      }
+      .disclaimer {
+        margin: 0 1.25rem 1rem;
+        padding: 7px 10px;
+        background: #fffbeb;
+        border: 1px solid #fde68a;
+        border-radius: var(--radius-sm);
+        font-size: 10px; color: #92400e;
+        line-height: 1.5;
+        display: flex; gap: 5px;
+      }
+
+      /* ── Info Card ──────────────────────────────── */
+      .info-item {
+        padding: 0.75rem 1.25rem;
+        border-bottom: 1px solid var(--border);
+        display: flex; gap: 10px; align-items: flex-start;
+      }
+      .info-item:last-child { border-bottom: none; }
+      .info-dot {
+        width: 7px; height: 7px;
+        border-radius: 50%; background: var(--accent);
+        margin-top: 5px; flex-shrink: 0;
+      }
+      .info-title  { font-size: 12px; font-weight: 600; margin-bottom: 2px; }
+      .info-desc   { font-size: 11px; color: var(--text-muted); line-height: 1.5; }
+      .stats-row {
+        display: grid; grid-template-columns: repeat(3,1fr);
+        gap: 1px; background: var(--border);
+        border-top: 1px solid var(--border);
+      }
+      .stat { background: var(--surface); padding: 0.875rem; text-align: center; }
+      .stat-num {
+        font-size: 20px; font-weight: 600;
+        color: var(--primary);
+        font-family: "IBM Plex Mono", monospace; display: block;
+      }
+      .stat-label { font-size: 10px; color: var(--text-muted); margin-top: 2px; }
+
+      /* ── Patient Form ───────────────────────────── */
+      .patient-form {
+        margin-top: 1rem;
+        display: flex; flex-direction: column; gap: 0.6rem;
+      }
+      .form-label {
+        font-size: 11px; font-weight: 600;
+        color: var(--text-muted); margin-bottom: 3px;
+        display: block; text-transform: uppercase; letter-spacing: 0.4px;
+      }
+      .form-select,
+      .form-textarea {
+        width: 100%; padding: 8px 11px;
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        font-family: inherit; font-size: 13px;
+        color: var(--text); background: var(--surface2);
+        outline: none; direction: rtl; transition: border-color 0.2s;
+      }
+      .form-select:focus,
+      .form-textarea:focus { border-color: var(--accent); }
+      .form-textarea {
+        resize: vertical; min-height: 58px; line-height: 1.5;
+      }
+
+      /* ── Chat ───────────────────────────────────── */
+      .chat-card { grid-column: 1/-1; }
+      .chat-disabled-notice {
+        display: flex; align-items: center; gap: 10px;
+        padding: 1.25rem;
+        color: var(--text-muted); font-size: 13px;
+        background: var(--surface2);
+      }
+      .chat-messages {
+        height: 280px; overflow-y: auto;
+        padding: 1rem 1.25rem;
+        display: flex; flex-direction: column; gap: 10px;
+        scroll-behavior: smooth;
+      }
+      .chat-messages::-webkit-scrollbar { width: 4px; }
+      .chat-messages::-webkit-scrollbar-thumb {
+        background: var(--border); border-radius: 99px;
+      }
+      .msg {
+        max-width: 80%; padding: 9px 13px;
+        border-radius: 12px; font-size: 13px;
+        line-height: 1.6;
+        animation: fadeIn 0.2s ease; white-space: pre-wrap;
+      }
+      @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(4px); }
+        to   { opacity: 1; }
+      }
+      .msg-bot  {
+        background: var(--primary-light); color: var(--primary-dark);
+        align-self: flex-start; border-bottom-right-radius: 4px;
+      }
+      .msg-user {
+        background: var(--primary); color: #fff;
+        align-self: flex-end; border-bottom-left-radius: 4px;
+      }
+      .msg-typing {
+        background: var(--primary-light); align-self: flex-start;
+        border-bottom-right-radius: 4px;
+        display: flex; gap: 4px; align-items: center; padding: 12px 16px;
+      }
+      .dot {
+        width: 6px; height: 6px;
+        background: var(--accent); border-radius: 50%;
+        animation: bounce 1.2s infinite;
+      }
+      .dot:nth-child(2) { animation-delay: 0.2s; }
+      .dot:nth-child(3) { animation-delay: 0.4s; }
+      @keyframes bounce {
+        0%,60%,100% { transform: translateY(0); }
+        30% { transform: translateY(-6px); }
+      }
+      .chat-input-wrap {
+        border-top: 1px solid var(--border);
+        padding: 0.875rem 1.25rem;
+        display: flex; gap: 8px;
+      }
+      .chat-input {
+        flex: 1; padding: 9px 12px;
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        font-family: inherit; font-size: 13px;
+        color: var(--text); background: var(--surface2);
+        outline: none; transition: border-color 0.2s; direction: rtl;
+      }
+      .chat-input:focus  { border-color: var(--accent); }
+      .chat-input:disabled { opacity: 0.5; cursor: not-allowed; }
+      .btn-send {
+        padding: 9px 16px; background: var(--primary);
+        color: #fff; border: none;
+        border-radius: var(--radius-sm);
+        font-family: inherit; font-size: 13px; font-weight: 600;
+        cursor: pointer; transition: background 0.2s;
+      }
+      .btn-send:hover:not(:disabled) { background: var(--primary-dark); }
+      .btn-send:disabled { opacity: 0.5; cursor: not-allowed; }
+      .chat-clear {
+        padding: 9px 12px; background: transparent;
+        color: var(--text-muted);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        font-size: 12px; cursor: pointer; transition: all 0.2s;
+      }
+      .chat-clear:hover { background: var(--surface2); }
+
+      footer {
+        text-align: center; padding: 1.25rem;
+        font-size: 11px; color: var(--text-light);
+        border-top: 1px solid var(--border);
+        margin-top: 0.5rem;
+      }
+
+      @media (max-width: 768px) {
+        main { grid-template-columns: 1fr; }
+        .chat-card { grid-column: 1; }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="logo">
+        <div class="logo-icon">🔬</div>
+        <div>
+          <div class="logo-text">DermaMind</div>
+          <div class="logo-sub">AI Skin Analysis · تحليل الجلد بالذكاء الاصطناعي</div>
+        </div>
+      </div>
+      <div class="header-badge">v3.0 · 15 Diseases + ChatBot</div>
+    </header>
+
+    <main>
+      <!-- ══════════════ LEFT COLUMN ══════════════════ -->
+      <div>
+        <div class="card">
+          <div class="card-header">
+            <div class="icon">📤</div>
+            <h2>رفع صورة الجلد · Upload Skin Image</h2>
+          </div>
+          <div class="card-body">
+            <div class="upload-zone" id="uploadZone">
+              <input type="file" id="fileInput" accept="image/jpeg,image/png" />
+              <span class="upload-icon">🖼️</span>
+              <div class="upload-title">اسحب الصورة هنا أو اضغط للاختيار</div>
+              <div class="upload-sub">Drag & drop or click · JPG, PNG فقط</div>
+            </div>
+            <div class="preview-wrap" id="previewWrap">
+              <img id="previewImg" src="" alt="preview" />
+              <button class="preview-remove" onclick="removeImage()">✕ إزالة</button>
+            </div>
+
+            <!-- ── بيانات المريض ─────────────────────── -->
+            <div class="patient-form">
+              <div>
+                <label class="form-label" for="lang">لغة التشخيص · Language</label>
+                <select class="form-select" id="lang">
+                  <option value="ar">العربية · Arabic</option>
+                  <option value="en">English · الإنجليزية</option>
+                </select>
+              </div>
+              <div>
+                <label class="form-label" for="medicalHistory">التاريخ الطبي (اختياري) · Medical History</label>
+                <textarea
+                  class="form-textarea"
+                  id="medicalHistory"
+                  placeholder="مثال: حساسية من البنسلين، ضغط دم مرتفع..."
+                ></textarea>
+              </div>
+            </div>
+
+            <div class="error-box" id="errorBox"></div>
+            <button
+              class="btn-analyze"
+              id="analyzeBtn"
+              onclick="analyzeImage()"
+              disabled
+            >
+              <span>🔬</span><span>بدء التشخيص الذكي · Start Smart Diagnosis</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- ── Instructions ───────────────────────── -->
+        <div class="card" style="margin-top: 1.25rem">
+          <div class="card-header">
+            <div class="icon">ℹ️</div>
+            <h2>تعليمات الاستخدام</h2>
+          </div>
+          <div class="info-item">
+            <div class="info-dot"></div>
+            <div>
+              <div class="info-title">📸 جودة الصورة</div>
+              <div class="info-desc">تأكد إن الصورة واضحة ومضاءة بشكل كافي.</div>
+            </div>
+          </div>
+          <div class="info-item">
+            <div class="info-dot"></div>
+            <div>
+              <div class="info-title">📋 أسئلة تكميلية</div>
+              <div class="info-desc">بعد رفع الصورة، ستظهر أسئلة لتحسين دقة التشخيص.</div>
+            </div>
+          </div>
+          <div class="info-item">
+            <div class="info-dot"></div>
+            <div>
+              <div class="info-title">💬 المساعد الطبي</div>
+              <div class="info-desc">بعد التشخيص، اسأل دكتور ديرما عن حالتك.</div>
+            </div>
+          </div>
+          <div class="stats-row">
+            <div class="stat">
+              <span class="stat-num">15</span>
+              <div class="stat-label">مرض جلدي</div>
+            </div>
+            <div class="stat">
+              <span class="stat-num">79%</span>
+              <div class="stat-label">دقة الموديل</div>
+            </div>
+            <div class="stat">
+              <span class="stat-num">AI</span>
+              <div class="stat-label">EfficientNet-B3</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════════ RIGHT COLUMN ═════════════════ -->
+      <div class="card">
+        <div class="card-header">
+          <div class="icon">📊</div>
+          <h2>نتيجة التحليل · Analysis Result</h2>
+        </div>
+
+        <!-- ── Step Progress Bar ──────────────────── -->
+        <div class="steps-bar" id="stepsBar">
+          <div class="step-item">
+            <div class="step-circle done" id="step1">✓</div>
+            <span class="step-label" id="stepLabel1">الصورة</span>
+          </div>
+          <div class="step-line" id="stepLine1"></div>
+          <div class="step-item">
+            <div class="step-circle" id="step2">2</div>
+            <span class="step-label" id="stepLabel2">الأسئلة</span>
+          </div>
+          <div class="step-line" id="stepLine2"></div>
+          <div class="step-item">
+            <div class="step-circle" id="step3">3</div>
+            <span class="step-label" id="stepLabel3">النتيجة</span>
+          </div>
+        </div>
+
+        <!-- ── Empty State ────────────────────────── -->
+        <div class="empty-state" id="emptyState">
+          <div class="empty-icon">🩺</div>
+          <p>ارفع صورة للجلد المصاب<br />وسيقوم النظام بتحليلها وإظهار النتيجة هنا</p>
+        </div>
+
+        <!-- ── Loading (Step 1 → 2) ───────────────── -->
+        <div class="loading" id="loadingState">
+          <div class="spinner"></div>
+          <p>جاري تحليل الصورة...<br />AI Model Analyzing...</p>
+        </div>
+
+        <!-- ══ QUESTIONS (Step 2) ═══════════════════ -->
+        <div class="questions-wrap" id="questionsWrap">
+          <div class="questions-intro">
+            <span>💡</span>
+            <span>أجب على هذه الأسئلة لتحسين دقة التشخيص · Answer to improve accuracy</span>
+          </div>
+          <div id="questionsContainer"></div>
+          <button class="btn-submit" id="submitBtn" onclick="submitAnswers()" disabled>
+            <span>📋</span><span>إرسال الإجابات · Submit Answers</span>
+          </button>
+        </div>
+
+        <!-- ── Loading (Step 2 → 3) ───────────────── -->
+        <div class="loading" id="qLoadingState">
+          <div class="spinner"></div>
+          <p>جاري التحليل النهائي مع Gemini AI...<br />Generating personalized diagnosis...</p>
+        </div>
+
+        <!-- ══ RESULT (Step 3) ═══════════════════════ -->
+        <div class="result-wrap" id="resultWrap">
+          <div class="result-header">
+            <div class="result-icon" id="resultIcon">🔬</div>
+            <div style="flex:1">
+              <div class="result-name-ar" id="resultNameAr">—</div>
+              <div class="result-name-en" id="resultNameEn">—</div>
+              <div id="confidenceBadge"></div>
+            </div>
+          </div>
+          <div class="insight-box">
+            <div class="box-title">🧠 رؤية مخصصة · Personalized Insight</div>
+            <div id="insightText"></div>
+          </div>
+          <div class="care-box">
+            <div class="box-title">💊 توصيات العناية · Care Recommendations</div>
+            <div id="careText"></div>
+          </div>
+          <div class="disclaimer">
+            <span>⚠️</span><span id="disclaimerText"></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════════ CHAT CARD ═════════════════════ -->
+      <div class="card chat-card">
+        <div class="card-header">
+          <div class="icon">💬</div>
+          <h2>دكتور ديرما · AI Medical Assistant</h2>
+        </div>
+        <div id="chatDisabled" class="chat-disabled-notice">
+          <span>🔒</span><span>قم بإتمام التشخيص أولاً لتفعيل المساعد الطبي</span>
+        </div>
+        <div id="chatActive" style="display:none">
+          <div class="chat-messages" id="chatMessages"></div>
+          <div class="chat-input-wrap">
+            <input
+              class="chat-input" id="chatInput" type="text"
+              placeholder="اسأل دكتور ديرما عن حالتك..."
+              onkeydown="if(event.key==='Enter') sendMessage();"
+            />
+            <button class="chat-clear" onclick="clearChat()">🗑️</button>
+            <button class="btn-send" onclick="sendMessage()">إرسال ←</button>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <footer>
+      DermaMind · Graduation Project · AI-Based Skin Disease Classification · 2025/2026
+    </footer>
+
+    <script>
+      /* ── API URLs ──────────────────────────────────── */
+      const START_URL    = 'https://derma-mind-api-production-a4c0.up.railway.app/diagnose/start';
+      const COMPLETE_URL = 'https://derma-mind-api-production-a4c0.up.railway.app/diagnose/complete';
+      const CHAT_URL     = 'https://derma-mind-api-production-a4c0.up.railway.app/chat';
+
+      /* ── English display names ─────────────────────── */
+      const DEN = {
+        Acne: "Acne Vulgaris", Actinic_Keratosis: "Actinic Keratosis",
+        Benign_tumors: "Benign Tumors", Bullous: "Bullous Disease",
+        DrugEruption: "Drug Eruption", Lichen: "Lichen Planus",
+        Moles: "Melanocytic Nevi", Psoriasis: "Psoriasis",
+        Rosacea: "Rosacea", Seborrh_Keratoses: "Seborrheic Keratosis",
+        SkinCancer: "Skin Cancer", Tinea: "Tinea / Ringworm",
+        Vasculitis: "Vasculitis", Vitiligo: "Vitiligo",
+        Warts: "Verruca Vulgaris",
+      };
+
+      /* ── State ─────────────────────────────────────── */
+      let selFile     = null;
+      let chatHist    = [];
+      let diagCtx     = null;
+      let chatting    = false;
+      let modelResult = null;
+      let questions   = [];   // مصفوفة الأسئلة من /diagnose/start
+      let answers     = {};   // قاموس الإجابات: { questionId: {question_id, question, answer} }
+      let currentStep = 0;
+
+      /* ── Drag & Drop ───────────────────────────────── */
+      const uz = document.getElementById("uploadZone");
+      uz.addEventListener("dragover",  (e) => { e.preventDefault(); uz.classList.add("dragover"); });
+      uz.addEventListener("dragleave", ()  => uz.classList.remove("dragover"));
+      uz.addEventListener("drop",      (e) => {
+        e.preventDefault(); uz.classList.remove("dragover");
+        if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
+      });
+      document.getElementById("fileInput").addEventListener("change", (e) => {
+        if (e.target.files[0]) handleFile(e.target.files[0]);
+      });
+
+      function handleFile(f) {
+        if (!["image/jpeg","image/png"].includes(f.type)) {
+          showErr("استخدم JPG أو PNG فقط."); return;
+        }
+        selFile = f;
+        const r = new FileReader();
+        r.onload = (e) => {
+          document.getElementById("previewImg").src = e.target.result;
+          document.getElementById("previewWrap").style.display = "block";
+          document.getElementById("analyzeBtn").disabled = false;
+          hideErr();
+        };
+        r.readAsDataURL(f);
+      }
+
+      function removeImage() {
+        selFile = null; modelResult = null; questions = []; answers = {};
+        document.getElementById("fileInput").value = "";
+        document.getElementById("previewWrap").style.display = "none";
+        document.getElementById("analyzeBtn").disabled = true;
+        document.getElementById("questionsWrap").style.display = "none";
+        document.getElementById("qLoadingState").style.display = "none";
+        document.getElementById("stepsBar").style.display = "none";
+        document.getElementById("submitBtn").disabled = true;
+        hideErr(); showEmpty(); disChat();
+      }
+
+      /* ── STEP 1: Analyze Image ─────────────────────── */
+      async function analyzeImage() {
+        if (!selFile) return;
+        showLoad(); hideErr();
+        const fd = new FormData();
+        fd.append("image",          selFile);
+        fd.append("lang",           document.getElementById("lang").value);
+        fd.append("medical_history", document.getElementById("medicalHistory").value.trim());
+        try {
+          const r = await fetch(START_URL, { method: "POST", body: fd });
+          const d = await r.json();
+          if (d.error) { showErr(d.error); showEmpty(); return; }
+          modelResult = d.model_result;
+          questions   = d.questions || [];
+          answers     = {};
+          showStepsBar();
+          setStep(2);
+          renderQuestions(questions);
+        } catch {
+          showErr("تعذر الاتصال بالـ API. تأكد من الاتصال بالإنترنت.");
+          showEmpty();
+        }
+      }
+
+      /* ── STEP 2: Render Questions ──────────────────── */
+      function renderQuestions(qs) {
+        hideAllPanels();
+        const container = document.getElementById('questionsContainer');
+        container.innerHTML = '';
+
+        qs.forEach((q, idx) => {
+          // بطاقة السؤال
+          const card = document.createElement('div');
+          card.className = 'question-card';
+
+          // نص السؤال
+          const questionText = document.createElement('div');
+          questionText.className = 'question-text';
+          questionText.textContent = (idx + 1) + '. ' + q.question;
+
+          // مجموعة الخيارات
+          const optionsGroup = document.createElement('div');
+          optionsGroup.className = 'options-group';
+          optionsGroup.id = 'options-' + q.id;
+
+          // إنشاء كل زرار بـ addEventListener — بدون inline onclick
+          (q.options || []).forEach(function(opt) {
+            const btn = document.createElement('button');
+            btn.className = 'option-btn';
+            btn.textContent = opt;
+            btn.addEventListener('click', function() {
+              selectOption(q.id, btn, opt);
+            });
+            optionsGroup.appendChild(btn);
+          });
+
+          card.appendChild(questionText);
+          card.appendChild(optionsGroup);
+          container.appendChild(card);
+        });
+
+        document.getElementById("questionsWrap").style.display = "block";
+      }
+
+      function selectOption(questionId, btn, value) {
+        // شيل الـ selected من كل أزرار نفس السؤال عبر closest
+        const group = btn.closest('.options-group');
+        group.querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected'));
+
+        // اختار الزرار الحالي
+        btn.classList.add('selected');
+
+        // احفظ الإجابة في القاموس
+        const q = questions.find(q => q.id === questionId);
+        answers[questionId] = {
+          question_id: questionId,
+          question:    q ? q.question : '',
+          answer:      value
+        };
+
+        // تحقق لو الكل جاوب عشان تفعّل زر الإرسال
+        checkAllAnswered();
+      }
+
+      function checkAllAnswered() {
+        const allAnswered = questions.every(q => answers[q.id] !== undefined);
+        const btn = document.getElementById('submitBtn');
+        if (btn) btn.disabled = !allAnswered;
+      }
+
+      /* ── STEP 3: Submit Answers ────────────────────── */
+      async function submitAnswers() {
+        // تأكد إن كل الأسئلة متجاوَبة (double-check)
+        if (!questions.every(q => answers[q.id])) {
+          showErr("الرجاء الإجابة على جميع الأسئلة."); return;
+        }
+        hideErr(); showQLoad();
+
+        const answersArray = Object.values(answers);  // تحويل القاموس لـ Array
+        const payload = {
+          model_result:    modelResult,
+          answers:         answersArray,
+          medical_history: document.getElementById("medicalHistory").value.trim(),
+          lang:            document.getElementById("lang").value
+        };
+
+        try {
+          const r = await fetch(COMPLETE_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+          });
+          const d = await r.json();
+          if (d.error) { showErr(d.error); renderQuestions(questions); return; }
+          setStep(3);
+          showResult(d);
+          enChat(d);
+        } catch {
+          showErr("تعذر الاتصال بالـ API. تأكد من الاتصال بالإنترنت.");
+          renderQuestions(questions);
+        }
+      }
+
+      /* ── Display Final Result ──────────────────────── */
+      function showResult(d) {
+        hideAllPanels();
+        /* disease info */
+        const disease  = d.disease || "";
+        const nameAr   = d.name_localized || disease;
+        const nameEn   = DEN[disease] || disease;
+        const confLvl  = d.confidence_level || "";
+
+        /* icon by confidence */
+        const iconMap  = { "عالية": "✅", "متوسطة": "🔶", "منخفضة": "⚠️",
+                           "high": "✅", "medium": "🔶", "low": "⚠️" };
+        const clsMap   = { "عالية": "conf-high", "متوسطة": "conf-medium", "منخفضة": "conf-low",
+                           "high": "conf-high",  "medium": "conf-medium", "low": "conf-low" };
+        const lblMap   = { "عالية": "ثقة عالية", "متوسطة": "ثقة متوسطة", "منخفضة": "ثقة منخفضة",
+                           "high": "High Confidence", "medium": "Medium Confidence", "low": "Low Confidence" };
+
+        document.getElementById("resultIcon").textContent    = iconMap[confLvl]  || "🔬";
+        document.getElementById("resultNameAr").textContent  = nameAr;
+        document.getElementById("resultNameEn").textContent  = nameEn;
+        document.getElementById("confidenceBadge").innerHTML =
+          `<span class="conf-level-badge ${clsMap[confLvl] || 'conf-medium'}">
+             ${iconMap[confLvl] || "🔬"} ${lblMap[confLvl] || confLvl}
+           </span>`;
+
+        /* care_recommendations may be Array or string */
+        function careToText(val) {
+          if (!val) return "—";
+          if (Array.isArray(val)) return val.map((v,i) => `${i+1}. ${v}`).join("\n");
+          return val;
+        }
+
+        document.getElementById("insightText").textContent  = d.personalized_insight  || "—";
+        document.getElementById("careText").textContent     = careToText(d.care_recommendations);
+        document.getElementById("disclaimerText").textContent = d.disclaimer || "";
+
+        document.getElementById("resultWrap").style.display = "block";
+      }
+
+      /* ── UI Helpers ────────────────────────────────── */
+      function hideAllPanels() {
+        document.getElementById("emptyState").style.display    = "none";
+        document.getElementById("loadingState").style.display  = "none";
+        document.getElementById("qLoadingState").style.display = "none";
+        document.getElementById("questionsWrap").style.display = "none";
+        document.getElementById("resultWrap").style.display    = "none";
+      }
+      function showLoad()  { hideAllPanels(); document.getElementById("loadingState").style.display  = "block"; }
+      function showQLoad() { hideAllPanels(); document.getElementById("qLoadingState").style.display = "block"; }
+      function showEmpty() { hideAllPanels(); document.getElementById("emptyState").style.display    = "block"; }
+
+      function showStepsBar() {
+        document.getElementById("stepsBar").style.display = "flex";
+        /* reset all to initial */
+        for (let i = 1; i <= 3; i++) {
+          document.getElementById(`step${i}`).className     = "step-circle";
+          document.getElementById(`step${i}`).textContent   = i;
+          document.getElementById(`stepLabel${i}`).className = "step-label";
+        }
+        document.getElementById("stepLine1").className = "step-line";
+        document.getElementById("stepLine2").className = "step-line";
+      }
+
+      function setStep(n) {
+        currentStep = n;
+        for (let i = 1; i <= 3; i++) {
+          const circle = document.getElementById(`step${i}`);
+          const label  = document.getElementById(`stepLabel${i}`);
+          if (i < n)       { circle.className = "step-circle done"; circle.textContent = "✓"; label.className = "step-label"; }
+          else if (i === n){ circle.className = "step-circle active"; circle.textContent = i;  label.className = "step-label active"; }
+          else             { circle.className = "step-circle"; circle.textContent = i; label.className = "step-label"; }
+        }
+        document.getElementById("stepLine1").className = n > 1 ? "step-line done" : "step-line";
+        document.getElementById("stepLine2").className = n > 2 ? "step-line done" : "step-line";
+      }
+
+      function showErr(m) {
+        const e = document.getElementById("errorBox");
+        e.textContent = "⚠️ " + m; e.style.display = "block";
+      }
+      function hideErr() {
+        document.getElementById("errorBox").style.display = "none";
+      }
+      function escHtml(s) {
+        return String(s)
+          .replace(/&/g,"&amp;").replace(/</g,"&lt;")
+          .replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+      }
+
+      /* ── Chat ──────────────────────────────────────── */
+      function enChat(d) {
+        const disease  = d.disease       || "";
+        const nameAr   = d.name_localized || disease;
+        const confLvl  = d.confidence_level || "";
+        diagCtx = `${disease} - ${nameAr} - مستوى الثقة: ${confLvl}`;
+        const welcomeMsg =
+          `مرحباً! 👋 اطلعت على نتيجة تشخيصك.\n\n` +
+          `📋 التشخيص: ${nameAr} (${disease})\n` +
+          `📊 مستوى الثقة: ${confLvl}\n\n` +
+          `كيف يمكنني مساعدتك؟`;
+        chatHist = [];
+        document.getElementById("chatDisabled").style.display = "none";
+        document.getElementById("chatActive").style.display   = "block";
+        document.getElementById("chatMessages").innerHTML      = "";
+        document.getElementById("chatInput").disabled          = false;
+        addBot(welcomeMsg);
+      }
+
+      function disChat() {
+        diagCtx = null; chatHist = [];
+        document.getElementById("chatDisabled").style.display = "flex";
+        document.getElementById("chatActive").style.display   = "none";
+      }
+
+      function addBot(t) {
+        const e = document.createElement("div");
+        e.className = "msg msg-bot"; e.textContent = t;
+        document.getElementById("chatMessages").appendChild(e); scr();
+      }
+      function addUser(t) {
+        const e = document.createElement("div");
+        e.className = "msg msg-user"; e.textContent = t;
+        document.getElementById("chatMessages").appendChild(e); scr();
+      }
+      function addTyping() {
+        const e = document.createElement("div");
+        e.className = "msg msg-typing"; e.id = "typ";
+        e.innerHTML = '<div class="dot"></div><div class="dot"></div><div class="dot"></div>';
+        document.getElementById("chatMessages").appendChild(e); scr();
+      }
+      function rmTyping() {
+        const e = document.getElementById("typ"); if (e) e.remove();
+      }
+      function scr() {
+        const e = document.getElementById("chatMessages");
+        e.scrollTop = e.scrollHeight;
+      }
+
+      async function sendMessage() {
+        const inp = document.getElementById("chatInput"), msg = inp.value.trim();
+        if (!msg || chatting) return;
+        inp.value = ""; chatting = true;
+        addUser(msg); addTyping();
+        try {
+          const r = await fetch(CHAT_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              message: msg,
+              history: chatHist,
+              diagnosis_context: chatHist.length === 0 ? diagCtx : null,
+            }),
+          });
+          const d = await r.json();
+          rmTyping();
+          const rep = d.response || "عذراً، حدث خطأ.";
+          addBot(rep);
+          chatHist.push({ role: "user", content: msg });
+          chatHist.push({ role: "assistant", content: rep });
+        } catch {
+          rmTyping(); addBot("عذراً، تعذر الاتصال بالمساعد.");
+        }
+        chatting = false;
+      }
+
+      function clearChat() {
+        chatHist = [];
+        document.getElementById("chatMessages").innerHTML = "";
+        if (diagCtx) addBot("تم مسح المحادثة. كيف يمكنني مساعدتك؟");
+      }
+    </script>
+  </body>
+</html>
