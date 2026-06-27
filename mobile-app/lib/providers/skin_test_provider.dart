@@ -52,12 +52,11 @@ class SkinTestProvider extends ChangeNotifier {
   bool get isCompleted =>
       totalQuestions > 0 && _answers.length == totalQuestions;
 
-  bool get hasSkinResult {
-    final hasType =
-        _skinType.isNotEmpty && _skinType.toLowerCase() != 'unknown';
-    final hasDescription = _skinHistory.isNotEmpty &&
-        _skinHistory.toLowerCase() != 'no history';
-    return hasType || hasDescription;
+  bool get hasSkinResult => _isValidSkinType(_skinType);
+
+  static bool _isValidSkinType(String value) {
+    final trimmed = value.trim();
+    return trimmed.isNotEmpty && trimmed.toLowerCase() != 'unknown';
   }
 
   List<SkinTestQuestionModel> get apiQuestions =>
@@ -124,6 +123,9 @@ class SkinTestProvider extends ChangeNotifier {
 
       if (result.success && result.data != null) {
         _applyResultModel(result.data!);
+        if (hasSkinResult) {
+          await _persistSkinResult();
+        }
       }
     } catch (e) {
       debugPrint(e.toString());
@@ -133,13 +135,12 @@ class SkinTestProvider extends ChangeNotifier {
   }
 
   void _applyResultModel(SkinTestResultModel model) {
-    if (model.skinType.isNotEmpty &&
-        model.skinType.toLowerCase() != 'unknown') {
-      _skinType = model.skinType;
+    if (model.hasValidSkinType) {
+      _skinType = model.skinType.trim();
     }
 
-    if (model.description != null && model.description!.isNotEmpty) {
-      _skinHistory = model.description!;
+    if (model.description != null && model.description!.trim().isNotEmpty) {
+      _skinHistory = model.description!.trim();
     }
 
     if (model.typeScores.isNotEmpty) {
@@ -214,35 +215,58 @@ class SkinTestProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> completeSkinTest() async {
-    _lastScan = DateFormat('MMMM dd, yyyy').format(DateTime.now());
+  /// Returns `null` on success, or an error message when any step fails.
+  Future<String?> completeSkinTest() async {
     if (!_questionsLoaded || _apiQuestions.isEmpty) {
-      debugPrint("Questions are not loaded.");
-      return;
+      return 'Skin test questions are not loaded. Please try again.';
     }
+    if (!isCompleted) {
+      return 'Please answer all questions before finishing.';
+    }
+
     try {
       final selectedOptionIds = _answers.values.toList();
-      final response = await ApiService.submitSkinTest(
+      final submitResponse = await ApiService.submitSkinTest(
         selectedOptionIds: selectedOptionIds,
         lang: _lang,
       );
-      if (!response.success) {
-        debugPrint("Submit Skin Test Failed");
-        return;
+      if (!submitResponse.success) {
+        return submitResponse.message ?? 'Failed to submit skin test.';
       }
-      if (response.data != null) {
-        _applyResultModel(response.data!);
+
+      final resultResponse = await ApiService.getSkinTestResult(lang: _lang);
+      if (!resultResponse.success) {
+        return resultResponse.message ??
+            'Failed to retrieve skin test result.';
       }
-      final result = await ApiService.getSkinTestResult(lang: _lang);
-      if (result.success && result.data != null) {
-        _applyResultModel(result.data!);
+      if (resultResponse.data == null) {
+        return 'Invalid skin test result received.';
       }
-      if (hasSkinResult) {
+
+      final model = resultResponse.data!;
+      if (!model.hasValidSkinType) {
+        return 'Skin test result is missing a valid skin type.';
+      }
+
+      _applyResultModel(model);
+      if (!hasSkinResult) {
+        return 'Failed to apply skin test result.';
+      }
+
+      _lastScan = DateFormat('MMMM dd, yyyy').format(DateTime.now());
+
+      try {
         await _persistSkinResult();
-        notifyListeners();
+      } catch (e) {
+        debugPrint(e.toString());
+        return 'Failed to save skin test result locally.';
       }
+
+      notifyListeners();
+      return null;
     } catch (e) {
       debugPrint(e.toString());
+      return 'An unexpected error occurred. Please try again.';
     }
   }
 }

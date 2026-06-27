@@ -44,21 +44,41 @@ class SkinTestResultModel {
     this.typeScores = const [],
   });
 
-  factory SkinTestResultModel.fromJson(Map<String, dynamic> json) {
-    final rawRecs = json['recommendations'] ?? json['tips'];
+  bool get hasValidSkinType {
+    final type = skinType.trim();
+    return type.isNotEmpty && type.toLowerCase() != 'unknown';
+  }
+
+  factory SkinTestResultModel.fromJson(dynamic rawJson) {
+    final json = rawJson is Map<String, dynamic>
+        ? rawJson
+        : rawJson is Map
+            ? Map<String, dynamic>.from(rawJson)
+            : <String, dynamic>{};
+
+    final source = json['data'] is Map<String, dynamic>
+        ? json['data'] as Map<String, dynamic>
+        : json['data'] is Map
+            ? Map<String, dynamic>.from(json['data'] as Map)
+            : json;
+
+    final rawRecs = source['recommendations'] ?? source['tips'];
     final recs = rawRecs != null
         ? (rawRecs as List).map((e) => e.toString()).toList()
         : null;
 
     return SkinTestResultModel(
-      skinType: json['skinTypeCode'] ??
-          json['skinType'] ??
-          json['skin_type'] ??
-          json['type'] ??
+      skinType: source['skinTypeCode'] ??
+          source['skinType'] ??
+          source['skin_type'] ??
+          source['type'] ??
           '',
-      description: json['description'] ?? json['details'],
+      description: source['description'] ??
+          source['details'] ??
+          source['skinHistory'] ??
+          source['mainConcern'],
       recommendations: recs,
-      typeScores: _parseTypeScores(json),
+      typeScores: _parseTypeScores(source),
     );
   }
 

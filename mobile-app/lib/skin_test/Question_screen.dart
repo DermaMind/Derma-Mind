@@ -90,13 +90,24 @@ class _QuestionScreenState extends State<QuestionScreen> {
         loading = true;
       });
 
-      await provider.completeSkinTest();
+      final error = await provider.completeSkinTest();
 
       setState(() {
         loading = false;
       });
 
       if (!mounted) return;
+
+      if (error != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(error),
+            backgroundColor: Colors.red.shade700,
+            duration: const Duration(seconds: 4),
+          ),
+        );
+        return;
+      }
 
       Navigator.pushNamedAndRemoveUntil(
         context,
