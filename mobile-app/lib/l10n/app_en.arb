@@ -1,0 +1,65 @@
+{
+  "whereAiMeetsSkinHealth": "Where AI Meets Skin Health",
+  "email": "Email",
+  "password": "Password",
+  "enterYourEmail": "Enter Your Email",
+  "enterYourPassword": "Enter Your Password",
+  "forgetPassword": "Forget Password",
+  "dontHaveAnAccount": "Don’t have an Account?",
+  "createAccount": "Create Account",
+  "or": "OR",
+  "login": "Login",
+  "passwordEnteredIsWrong": "*The password you entered is wrong",
+  "alreadyHaveAnAccount": "Already have an account?",
+  "name": "Name",
+  "enterYourName": "Enter Your Name",
+  "signUp": "Sign Up",
+  "question":"What’s your skin type?",
+  "subtitle":"We’ll recommend the ingredients your skin will love.",
+  "next":"Next",
+  "question2":"What’s your gender?",
+  "subtitle2":"This will help us adjust your routine steps based on your gender",
+    "question_age": "What is your age group?",
+    "subtitle_age": "This will help us personalize your product suggestions based on your age group.",
+      "question_skin_concern": "What is your skin health concern?",
+      "subtitle_skin_concern": "You can choose more than one answer.",
+      "messageSucceed": "You can check your skin factors in profile",
+      "goto_home":"Go to Home",
+      "home_subtitle": "Let’s take care of your skin journey.",
+        "testSkinTypeTitle": "Test Skin Type",
+        "testSkinTypeSubtitle": "Discover Your Skin Type In \nMinutes.",
+        "skinTest":"Skin Test",
+          "diagnose_title": "Diagnose Your Skin",
+          "diagnose_subtitle": "Capture or upload an image now.",
+
+          "assistant_title": "DermaMind Assistant",
+          "assistant_subtitle": "Ask anything about your case.",
+
+          "shop_title": "Shop",
+          "shop_subtitle": "Safe picks based on your condition.",
+
+          "doctors_title": "Nearby Dermatologists",
+          "doctors_subtitle": "Find clinics & specialists near you.",
+
+            "popular_products": "Popular Products",
+
+              "see_all": "See all",
+
+  "notifications": "Notifications",
+  "markAllRead": "Mark all read",
+  "today": "Today",
+  "earlier": "Earlier",
+  "filterAll": "All",
+  "filterUnread": "Unread",
+  "filterReminders": "Reminders",
+  "noNotificationsYet": "No notifications yet",
+  "noNotificationsSubtitle": "You're all caught up!"
+
+
+
+
+
+
+
+
+}

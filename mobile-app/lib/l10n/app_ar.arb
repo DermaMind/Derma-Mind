@@ -1,0 +1,65 @@
+{
+  "whereAiMeetsSkinHealth": "حيث يلتقي الذكاء الاصطناعي بصحة البشرة",
+  "email": "البريد الإلكتروني",
+  "password": "كلمة المرور",
+  "enterYourEmail": "أدخل بريدك الإلكتروني",
+  "enterYourPassword": "أدخل كلمة المرور",
+  "forgetPassword": "نسيت كلمة المرور",
+  "dontHaveAnAccount": "ليس لديك حساب؟",
+  "createAccount": "إنشاء حساب",
+  "or": "أو",
+  "login": "تسجيل الدخول",
+  "passwordEnteredIsWrong": "كلمة المرور التي أدخلتها غير صحيحة*",
+  "name": "الاسم",
+  "enterYourName": "أدخل اسمك",
+  "signUp": "إنشاء حساب",
+  "alreadyHaveAnAccount": "لديك حساب بالفعل؟",
+  "question1": "ما هو نوع بشرتك؟",
+  "subtitle1": "سنرشح لك المكونات التي تناسب بشرتك.",
+    "next":"التالي",
+    "question2": "ما هو جنسك؟",
+    "subtitle2": "سيساعدنا ذلك في تخصيص روتين العناية ببشرتك بناءً على جنسك",
+      "question_age": "كم عمرك؟",
+      "subtitle_age": "سيساعدنا ذلك على تخصيص اقتراحات المنتجات المناسبة لفئتك العمرية.",
+        "question_skin_concern": "ما هي مشكلة بشرتك الصحيه ؟",
+        "subtitle_skin_concern": "يمكنك اختيار أكثر من إجابة",
+        "messageSucceed": "يمكنك الاطلاع على عوامل بشرتك من خلال الملف الشخصي",
+         "goto_home":"الذهاب الى الصفحة الرئيسية",
+         "home_subtitle": "دعينا نعتني برحلة العناية ببشرتك",
+           "testSkinTypeTitle": "اختبار نوع البشرة",
+           "testSkinTypeSubtitle": "اكتشف نوع بشرتك خلال \n دقائق.",
+            "skinTest":"Skin Test",
+
+              "diagnose_title": "تشخيص بشرتك",
+              "diagnose_subtitle": "التقط صورة أو قم برفع صورة الآن.",
+
+              "assistant_title": "المساعد الذكي",
+              "assistant_subtitle": "اسأل عن أي شيء يخص حالتك.",
+
+              "shop_title": "المتجر",
+              "shop_subtitle": "اختيارات آمنة حسب حالة بشرتك.",
+
+              "doctors_title": "أطباء جلدية قريبون",
+              "doctors_subtitle": "اعثر على عيادات وأطباء بالقرب منك.",
+
+               "popular_products": "المنتجات الأكثر شيوعًا",
+
+                 "see_all": "عرض الكل",
+
+  "notifications": "الإشعارات",
+  "markAllRead": "تحديد الكل كمقروء",
+  "today": "اليوم",
+  "earlier": "سابقاً",
+  "filterAll": "الكل",
+  "filterUnread": "غير مقروء",
+  "filterReminders": "التذكيرات",
+  "noNotificationsYet": "لا توجد إشعارات",
+  "noNotificationsSubtitle": "أنت على اطلاع بكل شيء!"
+
+
+
+
+
+
+
+}

@@ -1,0 +1,23 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(Get-ChildItem -Path \"D:\\\\dermamind_app\" -Recurse -Directory -Force)",
+      "Bash(Select-Object -ExpandProperty FullName)",
+      "Bash(flutter analyze *)",
+      "Bash(flutter gen-l10n *)",
+      "Skill(run)",
+      "Skill(run:*)",
+      "Bash(flutter devices *)",
+      "mcp__Claude_Preview__preview_start",
+      "Bash(Start-Sleep -Seconds 10)",
+      "Bash(flutter pub *)",
+      "Bash(Read \"C:\\\\Users\\\\MF\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\D--dermamind-app\\\\76d1801e-2142-4ce9-bdc5-79099da3ab52\\\\tasks\\\\bp9clfq94.output\")",
+      "Bash(dart pub *)",
+      "Bash(flutter build *)",
+      "Bash(flutter clean *)",
+      "Bash(findstr /i \"error warning failure FAILURE what went wrong\")",
+      "Bash(gradlew.bat --stop)",
+      "Bash(flutter run *)"
+    ]
+  }
+}
