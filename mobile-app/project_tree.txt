@@ -1,0 +1,522 @@
+Folder PATH listing
+Volume serial number is 000000F2 DA7A:8C97
+C:.
+|   .gitignore
+|   .metadata
+|   analysis_options.yaml
+|   dermamind_app.iml
+|   l10n.yaml
+|   project_tree.txt
+|   pubspec.lock
+|   pubspec.yaml
+|   README.md
+|   swagger.json
+|   
++---.claude
+|       launch.json
+|       settings.local.json
+|       
++---.idea
+|   |   .gitignore
+|   |   misc.xml
+|   |   modules.xml
+|   |   vcs.xml
+|   |   
+|   +---caches
+|   |       deviceStreaming.xml
+|   |       
+|   +---libraries
+|   |       Dart_Packages.xml
+|   |       Dart_SDK.xml
+|   |       Flutter_Plugins.xml
+|   |       KotlinJavaRuntime.xml
+|   |       
+|   \---runConfigurations
+|           main_dart.xml
+|           
++---android
+|   |   .gitignore
+|   |   build.gradle
+|   |   dermamind_app_android.iml
+|   |   gradle.properties
+|   |   settings.gradle
+|   |   
+|   +---.kotlin
+|   |   \---errors
+|   |           errors-1777836282116.log
+|   |           errors-1777836282165.log
+|   |           errors-1777836282200.log
+|   |           errors-1781564287936.log
+|   |           errors-1781740059781.log
+|   |           errors-1781740059801.log
+|   |           errors-1781740059818.log
+|   |           errors-1781740059831.log
+|   |           errors-1781745507903.log
+|   |           errors-1781745507937.log
+|   |           errors-1781745507966.log
+|   |           errors-1781745507981.log
+|   |           errors-1781745507996.log
+|   |           errors-1782047595569.log
+|   |           errors-1782047595612.log
+|   |           errors-1782047595642.log
+|   |           errors-1782047595657.log
+|   |           errors-1782047595671.log
+|   |           errors-1782050784760.log
+|   |           errors-1782050784770.log
+|   |           errors-1782050784782.log
+|   |           errors-1782050784786.log
+|   |           errors-1782050784793.log
+|   |           errors-1782051222006.log
+|   |           errors-1782051222024.log
+|   |           errors-1782051222038.log
+|   |           errors-1782051222044.log
+|   |           errors-1782051222052.log
+|   |           errors-1782054092858.log
+|   |           errors-1782054092877.log
+|   |           errors-1782054092888.log
+|   |           errors-1782054092896.log
+|   |           errors-1782054092902.log
+|   |           errors-1782056768758.log
+|   |           errors-1782056768777.log
+|   |           errors-1782056768793.log
+|   |           errors-1782056768809.log
+|   |           errors-1782056768826.log
+|   |           
+|   +---app
+|   |   |   build.gradle
+|   |   |   
+|   |   \---src
+|   |       +---debug
+|   |       |       AndroidManifest.xml
+|   |       |       
+|   |       +---main
+|   |       |   |   AndroidManifest.xml
+|   |       |   |   
+|   |       |   +---kotlin
+|   |       |   |   \---com
+|   |       |   |       \---example
+|   |       |   |           \---dermamind_app
+|   |       |   |                   MainActivity.kt
+|   |       |   |                   
+|   |       |   \---res
+|   |       |       +---drawable
+|   |       |       |       launch_background.xml
+|   |       |       |       
+|   |       |       +---drawable-v21
+|   |       |       |       launch_background.xml
+|   |       |       |       
+|   |       |       +---mipmap-hdpi
+|   |       |       |       ic_launcher.png
+|   |       |       |       
+|   |       |       +---mipmap-mdpi
+|   |       |       |       ic_launcher.png
+|   |       |       |       
+|   |       |       +---mipmap-xhdpi
+|   |       |       |       ic_launcher.png
+|   |       |       |       
+|   |       |       +---mipmap-xxhdpi
+|   |       |       |       ic_launcher.png
+|   |       |       |       
+|   |       |       +---mipmap-xxxhdpi
+|   |       |       |       ic_launcher.png
+|   |       |       |       
+|   |       |       +---values
+|   |       |       |       strings.xml
+|   |       |       |       styles.xml
+|   |       |       |       
+|   |       |       \---values-night
+|   |       |               styles.xml
+|   |       |               
+|   |       \---profile
+|   |               AndroidManifest.xml
+|   |               
+|   \---gradle
+|       \---wrapper
+|               gradle-wrapper.properties
+|               
++---assets
+|   \---images
+|       |   apple.png
+|       |   calendar.png
+|       |   diagnosis.png
+|       |   Eye.png
+|       |   Facebook icon.png
+|       |   google icon.png
+|       |   Home 1.png
+|       |   Home.png
+|       |   logo.png
+|       |   love.png
+|       |   loveicon.png
+|       |   loveIcon2.png
+|       |   map.png
+|       |   map2.png
+|       |   Notification.png
+|       |   photo home.png
+|       |   photocard.png
+|       |   product.png
+|       |   shop.png
+|       |   shopping_cart.png
+|       |   show.png
+|       |   smartAsistantCard.png
+|       |   
+|       +---2x
+|       |       apple2x.png
+|       |       calendar@2x.png
+|       |       diagnosis2x.png
+|       |       Eye@2x.png
+|       |       Facebook icon@2x.png
+|       |       Frame 1000005139@2x.png
+|       |       google@2x.png
+|       |       Home 1@2x.png
+|       |       Home@2x.png
+|       |       Icon Frame@2x.png
+|       |       logo@2x.png
+|       |       map@2x.png
+|       |       Notification@2x.png
+|       |       photo home@2x.png
+|       |       photocard.png
+|       |       Rectangle 3619@2x.png
+|       |       Rectangle 74@2x.png
+|       |       shopping-bag@2x.png
+|       |       show2x.png
+|       |       Union@2x.png
+|       |       Vector@2x.png
+|       |       ?? icon _shopping cart_@2x.png
+|       |       
+|       \---3x
+|               apple3x.png
+|               calendar@3x.png
+|               Eye@3x.png
+|               Facebook icon@3x.png
+|               Frame 1000005139@3x.png
+|               google icon@3x.png
+|               Group@3x.png
+|               Home 1@3x.png
+|               Home@3x.png
+|               Icon Frame@3x.png
+|               logo@3x.png
+|               map@3x.png
+|               Notification@3x.png
+|               photo home@3x.png
+|               Rectangle 3619@3x.png
+|               Rectangle 74@3x.png
+|               shopping-bag@3x.png
+|               show @3x.png
+|               Union@3x.png
+|               Vector@3x.png
+|                „  ⁄œÌ· - shutterstock_373498504-835x609 1@3x.png
+|               ?? icon _shopping cart_@3x.png
+|               
++---ios
+|   |   .gitignore
+|   |   
+|   +---Flutter
+|   |       AppFrameworkInfo.plist
+|   |       Debug.xcconfig
+|   |       Release.xcconfig
+|   |       
+|   +---Runner
+|   |   |   AppDelegate.swift
+|   |   |   Info.plist
+|   |   |   Runner-Bridging-Header.h
+|   |   |   
+|   |   +---Assets.xcassets
+|   |   |   +---AppIcon.appiconset
+|   |   |   |       Contents.json
+|   |   |   |       Icon-App-1024x1024@1x.png
+|   |   |   |       Icon-App-20x20@1x.png
+|   |   |   |       Icon-App-20x20@2x.png
+|   |   |   |       Icon-App-20x20@3x.png
+|   |   |   |       Icon-App-29x29@1x.png
+|   |   |   |       Icon-App-29x29@2x.png
+|   |   |   |       Icon-App-29x29@3x.png
+|   |   |   |       Icon-App-40x40@1x.png
+|   |   |   |       Icon-App-40x40@2x.png
+|   |   |   |       Icon-App-40x40@3x.png
+|   |   |   |       Icon-App-60x60@2x.png
+|   |   |   |       Icon-App-60x60@3x.png
+|   |   |   |       Icon-App-76x76@1x.png
+|   |   |   |       Icon-App-76x76@2x.png
+|   |   |   |       Icon-App-83.5x83.5@2x.png
+|   |   |   |       
+|   |   |   \---LaunchImage.imageset
+|   |   |           Contents.json
+|   |   |           LaunchImage.png
+|   |   |           LaunchImage@2x.png
+|   |   |           LaunchImage@3x.png
+|   |   |           README.md
+|   |   |           
+|   |   \---Base.lproj
+|   |           LaunchScreen.storyboard
+|   |           Main.storyboard
+|   |           
+|   +---Runner.xcodeproj
+|   |   |   project.pbxproj
+|   |   |   
+|   |   +---project.xcworkspace
+|   |   |   |   contents.xcworkspacedata
+|   |   |   |   
+|   |   |   \---xcshareddata
+|   |   |           IDEWorkspaceChecks.plist
+|   |   |           WorkspaceSettings.xcsettings
+|   |   |           
+|   |   \---xcshareddata
+|   |       \---xcschemes
+|   |               Runner.xcscheme
+|   |               
+|   +---Runner.xcworkspace
+|   |   |   contents.xcworkspacedata
+|   |   |   
+|   |   \---xcshareddata
+|   |           IDEWorkspaceChecks.plist
+|   |           WorkspaceSettings.xcsettings
+|   |           
+|   \---RunnerTests
+|           RunnerTests.swift
+|           
++---lib
+|   |   main.dart
+|   |   
+|   +---Authentication
+|   |   |   forget_password_screen.dart
+|   |   |   login.dart
+|   |   |   register.dart
+|   |   |   reset_password_screen.dart
+|   |   |   verify_otp_screen.dart
+|   |   |   
+|   |   \---widgets
+|   |           google_sign_in_button.dart
+|   |           
+|   +---cart
+|   |       cart_screen.dart
+|   |       
+|   +---chatbot
+|   |       chatbot_screen.dart
+|   |       
+|   +---config
+|   |       google_auth_config.dart
+|   |       
+|   +---doctors
+|   |       doctors_screen.dart
+|   |       
+|   +---favorites
+|   |       favorites_screen.dart
+|   |       
+|   +---HomeScreen
+|   |   |   HomeScreen.dart
+|   |   |   
+|   |   +---model
+|   |   |       service_model.dart
+|   |   |       
+|   |   \---wiidget
+|   |           homeHeader.dart
+|   |           main_layout.dart
+|   |           popular_produt.dart
+|   |           ProductCategories.dart
+|   |           ProductsGrid.dart
+|   |           profile_Screen.dart
+|   |           scrvice_card.dart
+|   |           searchbar.dart
+|   |           SlidePageRoute.dart
+|   |           TestCard.dart
+|   |           
+|   +---l10n
+|   |       app_ar.arb
+|   |       app_en.arb
+|   |       app_localizations.dart
+|   |       app_localizations_ar.dart
+|   |       app_localizations_en.dart
+|   |       
+|   +---models
+|   |       api_response.dart
+|   |       auth_response_model.dart
+|   |       cart_item_model.dart
+|   |       chatbot_response_model.dart
+|   |       checkout_response_model.dart
+|   |       diagnose_answer_model.dart
+|   |       map_place_model.dart
+|   |       product_model_api.dart
+|   |       scan_analyze_model.dart
+|   |       scan_history_model.dart
+|   |       scan_result_model.dart
+|   |       skin_test_question_model.dart
+|   |       skin_test_result_model.dart
+|   |       user_model.dart
+|   |       
+|   +---notifications
+|   |       notifications_screen.dart
+|   |       notification_model.dart
+|   |       
+|   +---payment
+|   |       paymob_payment_screen.dart
+|   |       
+|   +---product_screen
+|   |       ProductDetailsScreen.dart
+|   |       product_details_screen.dart
+|   |       product_model.dart
+|   |       product_screen.dart
+|   |       
+|   +---providers
+|   |       auth_provider.dart
+|   |       cart_provider.dart
+|   |       favorites_provider.dart
+|   |       locale_provider.dart
+|   |       notification_provider.dart
+|   |       provider_product.dart
+|   |       scan_history_provider.dart
+|   |       skin_test_provider.dart
+|   |       theme_provider.dart
+|   |       
+|   +---Scan_Screen
+|   |       camera_scan.dart
+|   |       scan_face_screen.dart
+|   |       scan_followup_screen.dart
+|   |       scan_history_screen.dart
+|   |       scan_result_screen.dart
+|   |       
+|   +---services
+|   |       api_service.dart
+|   |       google_auth_service.dart
+|   |       notification_service.dart
+|   |       
+|   +---settings
+|   |       edit_profile_screen.dart
+|   |       faq_screen.dart
+|   |       settings_screen.dart
+|   |       terms_privacy_screen.dart
+|   |       
+|   +---skin_test
+|   |   |   Question_screen.dart
+|   |   |   sucessedScreen.dart
+|   |   |   
+|   |   \---reuseble_component
+|   |           NextButton.dart
+|   |           option_Card.dart
+|   |           productItemCard_grid.dart
+|   |           product_Item_card.dart
+|   |           questionHeader.dart
+|   |           
+|   +---splash
+|   |       splash_screen.dart
+|   |       
+|   \---utils
+|           app_color.dart
+|           app_style.dart
+|           app_themes.dart
+|           assets_Maneger.dart
+|           image_converter.dart
+|           prefs_helper.dart
+|           product_image.dart
+|           profile_avatar.dart
+|           
++---linux
+|   |   .gitignore
+|   |   CMakeLists.txt
+|   |   main.cc
+|   |   my_application.cc
+|   |   my_application.h
+|   |   
+|   \---flutter
+|           CMakeLists.txt
+|           generated_plugins.cmake
+|           generated_plugin_registrant.cc
+|           generated_plugin_registrant.h
+|           
++---macos
+|   |   .gitignore
+|   |   
+|   +---Flutter
+|   |       Flutter-Debug.xcconfig
+|   |       Flutter-Release.xcconfig
+|   |       GeneratedPluginRegistrant.swift
+|   |       
+|   +---Runner
+|   |   |   AppDelegate.swift
+|   |   |   DebugProfile.entitlements
+|   |   |   Info.plist
+|   |   |   MainFlutterWindow.swift
+|   |   |   Release.entitlements
+|   |   |   
+|   |   +---Assets.xcassets
+|   |   |   \---AppIcon.appiconset
+|   |   |           app_icon_1024.png
+|   |   |           app_icon_128.png
+|   |   |           app_icon_16.png
+|   |   |           app_icon_256.png
+|   |   |           app_icon_32.png
+|   |   |           app_icon_512.png
+|   |   |           app_icon_64.png
+|   |   |           Contents.json
+|   |   |           
+|   |   +---Base.lproj
+|   |   |       MainMenu.xib
+|   |   |       
+|   |   \---Configs
+|   |           AppInfo.xcconfig
+|   |           Debug.xcconfig
+|   |           Release.xcconfig
+|   |           Warnings.xcconfig
+|   |           
+|   +---Runner.xcodeproj
+|   |   |   project.pbxproj
+|   |   |   
+|   |   +---project.xcworkspace
+|   |   |   \---xcshareddata
+|   |   |           IDEWorkspaceChecks.plist
+|   |   |           
+|   |   \---xcshareddata
+|   |       \---xcschemes
+|   |               Runner.xcscheme
+|   |               
+|   +---Runner.xcworkspace
+|   |   |   contents.xcworkspacedata
+|   |   |   
+|   |   \---xcshareddata
+|   |           IDEWorkspaceChecks.plist
+|   |           
+|   \---RunnerTests
+|           RunnerTests.swift
+|           
++---scripts
+|       read_swagger.js
+|       
++---test
+|       widget_test.dart
+|       
++---web
+|   |   favicon.png
+|   |   index.html
+|   |   manifest.json
+|   |   
+|   \---icons
+|           Icon-192.png
+|           Icon-512.png
+|           Icon-maskable-192.png
+|           Icon-maskable-512.png
+|           
+\---windows
+    |   .gitignore
+    |   CMakeLists.txt
+    |   
+    +---flutter
+    |       CMakeLists.txt
+    |       generated_plugins.cmake
+    |       generated_plugin_registrant.cc
+    |       generated_plugin_registrant.h
+    |       
+    \---runner
+        |   CMakeLists.txt
+        |   flutter_window.cpp
+        |   flutter_window.h
+        |   main.cpp
+        |   resource.h
+        |   runner.exe.manifest
+        |   Runner.rc
+        |   utils.cpp
+        |   utils.h
+        |   win32_window.cpp
+        |   win32_window.h
+        |   
+        \---resources
+                app_icon.ico
+                
