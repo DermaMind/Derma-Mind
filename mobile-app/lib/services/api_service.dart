@@ -385,8 +385,7 @@ class ApiService {
       );
       return _handleResponse(
         response,
-            (json) =>
-            SkinTestResultModel.fromJson(json as Map<String, dynamic>),
+        (json) => SkinTestResultModel.fromJson(json),
       );
     } catch (e) {
       return ApiResponse.error(_exceptionMessage(e));
@@ -403,8 +402,7 @@ class ApiService {
 
       return _handleResponse(
         response,
-            (json) =>
-            SkinTestResultModel.fromJson(json as Map<String, dynamic>),
+        (json) => SkinTestResultModel.fromJson(json),
       );
     } catch (e) {
       return ApiResponse.error(_exceptionMessage(e));
@@ -710,10 +708,26 @@ class ApiService {
             statusCode: response.statusCode);
       }
     } else {
+      final message = response.body.isNotEmpty
+          ? _parseError(response.body)
+          : _httpStatusMessage(response.statusCode);
       return ApiResponse.error(
-        _parseError(response.body),
+        message,
         statusCode: response.statusCode,
       );
+    }
+  }
+
+  static String _httpStatusMessage(int statusCode) {
+    switch (statusCode) {
+      case 401:
+        return 'Please sign in again.';
+      case 403:
+        return 'You do not have permission to perform this action.';
+      case 404:
+        return 'Requested resource was not found.';
+      default:
+        return 'Something went wrong';
     }
   }
 
@@ -721,8 +735,24 @@ class ApiService {
     if (body.isEmpty) return 'Something went wrong';
     try {
       final json = jsonDecode(body) as Map<String, dynamic>;
-      return (json['message'] ?? json['error'] ?? 'Something went wrong')
-          .toString();
+      final message = json['message'] ?? json['error'] ?? json['title'];
+      if (message != null && message.toString().trim().isNotEmpty) {
+        return message.toString();
+      }
+      final errors = json['errors'];
+      if (errors is Map) {
+        final parts = <String>[];
+        for (final entry in errors.entries) {
+          final value = entry.value;
+          if (value is List) {
+            parts.addAll(value.map((e) => e.toString()));
+          } else if (value != null) {
+            parts.add(value.toString());
+          }
+        }
+        if (parts.isNotEmpty) return parts.join('\n');
+      }
+      return 'Something went wrong';
     } catch (_) {
       return 'Something went wrong';
     }

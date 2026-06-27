@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 
 import '../models/skin_test_question_model.dart';
 import '../models/skin_test_result_model.dart';
+import '../models/api_response.dart';
 import '../services/api_service.dart';
 import '../utils/prefs_helper.dart';
 
@@ -215,6 +216,30 @@ class SkinTestProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  List<int> _selectedOptionIdsInOrder() {
+    final ids = <int>[];
+    for (var i = 0; i < totalQuestions; i++) {
+      final optionId = _answers[i];
+      if (optionId == null) return const [];
+      ids.add(optionId);
+    }
+    return ids;
+  }
+
+  String _skinTestApiError(
+    ApiResponse<dynamic> response,
+    String fallback,
+  ) {
+    if (response.statusCode == 401) {
+      return 'Please sign in again to complete the skin test.';
+    }
+    final message = response.message?.trim();
+    if (message != null && message.isNotEmpty) {
+      return message;
+    }
+    return fallback;
+  }
+
   /// Returns `null` on success, or an error message when any step fails.
   Future<String?> completeSkinTest() async {
     if (!_questionsLoaded || _apiQuestions.isEmpty) {
@@ -224,31 +249,54 @@ class SkinTestProvider extends ChangeNotifier {
       return 'Please answer all questions before finishing.';
     }
 
+    final token = await PrefsHelper.getToken();
+    if (token == null || token.isEmpty) {
+      return 'Please sign in to complete the skin test.';
+    }
+    ApiService.setToken(token);
+
     try {
-      final selectedOptionIds = _answers.values.toList();
+      final selectedOptionIds = _selectedOptionIdsInOrder();
+      if (selectedOptionIds.length != totalQuestions) {
+        return 'Please answer all questions before finishing.';
+      }
+
       final submitResponse = await ApiService.submitSkinTest(
         selectedOptionIds: selectedOptionIds,
         lang: _lang,
       );
       if (!submitResponse.success) {
-        return submitResponse.message ?? 'Failed to submit skin test.';
+        return _skinTestApiError(
+          submitResponse,
+          'Failed to submit skin test.',
+        );
+      }
+
+      SkinTestResultModel? resolvedResult;
+      if (submitResponse.data?.hasValidSkinType == true) {
+        resolvedResult = submitResponse.data;
       }
 
       final resultResponse = await ApiService.getSkinTestResult(lang: _lang);
-      if (!resultResponse.success) {
-        return resultResponse.message ??
-            'Failed to retrieve skin test result.';
-      }
-      if (resultResponse.data == null) {
-        return 'Invalid skin test result received.';
+      if (resultResponse.success &&
+          resultResponse.data != null &&
+          resultResponse.data!.hasValidSkinType) {
+        resolvedResult = resultResponse.data;
       }
 
-      final model = resultResponse.data!;
-      if (!model.hasValidSkinType) {
+      if (resolvedResult == null || !resolvedResult.hasValidSkinType) {
+        if (resolvedResult == null &&
+            !resultResponse.success &&
+            submitResponse.data?.hasValidSkinType != true) {
+          return _skinTestApiError(
+            resultResponse,
+            'Failed to retrieve skin test result.',
+          );
+        }
         return 'Skin test result is missing a valid skin type.';
       }
 
-      _applyResultModel(model);
+      _applyResultModel(resolvedResult);
       if (!hasSkinResult) {
         return 'Failed to apply skin test result.';
       }

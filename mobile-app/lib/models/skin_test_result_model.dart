@@ -56,11 +56,15 @@ class SkinTestResultModel {
             ? Map<String, dynamic>.from(rawJson)
             : <String, dynamic>{};
 
-    final source = json['data'] is Map<String, dynamic>
+    var source = json['data'] is Map<String, dynamic>
         ? json['data'] as Map<String, dynamic>
         : json['data'] is Map
             ? Map<String, dynamic>.from(json['data'] as Map)
             : json;
+
+    if (source['result'] is Map) {
+      source = Map<String, dynamic>.from(source['result'] as Map);
+    }
 
     final rawRecs = source['recommendations'] ?? source['tips'];
     final recs = rawRecs != null
@@ -71,6 +75,7 @@ class SkinTestResultModel {
       skinType: source['skinTypeCode'] ??
           source['skinType'] ??
           source['skin_type'] ??
+          source['skinTypeName'] ??
           source['type'] ??
           '',
       description: source['description'] ??
