@@ -255,36 +255,27 @@ class _TestCardState extends State<TestCard> {
 
   Widget _buildResultCard(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final isRtl = Directionality.of(context) == TextDirection.rtl;
-    final photoSidePadding = isRtl ? 96.0 : 96.0;
-
     final showSkinType = _isValidField(widget.skinType);
-    final showSkinHistory = _isValidField(widget.skinHistory);
-    final showLastScan = _isValidField(widget.lastScan);
+    final showDescription = _isValidField(widget.skinHistory);
 
-    return _buildCardShell(
-      context: context,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.06),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      content: Padding(
-        padding: EdgeInsets.fromLTRB(
-          24,
-          16,
-          photoSidePadding,
-          16,
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(18),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.06),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
               l10n?.skinTypeResult ?? 'Skin Type Result',
@@ -293,71 +284,73 @@ class _TestCardState extends State<TestCard> {
                 color: AppColor.blackColor,
               ),
             ),
-            const SizedBox(height: 10),
             if (showSkinType) ...[
-              _ResultField(
-                label: l10n?.skinType ?? 'Skin Type',
-                value: widget.skinType,
+              const SizedBox(height: 14),
+              Text(
+                l10n?.skinType ?? 'Skin Type',
+                style: AppStyle.regular.copyWith(
+                  color: AppColor.blackColor.withValues(alpha: 0.5),
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
-              const SizedBox(height: 6),
+              const SizedBox(height: 4),
+              Text(
+                widget.skinType,
+                style: AppStyle.semi20Linear.copyWith(
+                  color: AppColor.blackColor,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
+              ),
             ],
-            if (showSkinHistory) ...[
-              _ResultField(
-                label: l10n?.skinHistory ?? 'Skin History',
-                value: widget.skinHistory,
-                maxLines: 3,
+            if (showDescription) ...[
+              const SizedBox(height: 14),
+              Text(
+                l10n?.description ?? 'Description',
+                style: AppStyle.regular.copyWith(
+                  color: AppColor.blackColor.withValues(alpha: 0.5),
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
-              const SizedBox(height: 6),
+              const SizedBox(height: 4),
+              Text(
+                widget.skinHistory,
+                style: AppStyle.regular.copyWith(
+                  color: AppColor.blackColor.withValues(alpha: 0.85),
+                  fontSize: 14,
+                  height: 1.45,
+                ),
+              ),
             ],
-            if (showLastScan)
-              _ResultField(
-                label: l10n?.lastScan ?? 'Last Scan',
-                value: widget.lastScan,
+            if (widget.onStartTest != null) ...[
+              const SizedBox(height: 18),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: _handleStartTest,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColor.blue2Color,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 13),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                  ),
+                  child: Text(
+                    l10n?.retakeSkinTest ?? 'Retake Skin Test',
+                    style: AppStyle.regular.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
               ),
+            ],
           ],
         ),
       ),
-    );
-  }
-}
-
-class _ResultField extends StatelessWidget {
-  final String label;
-  final String value;
-  final int maxLines;
-
-  const _ResultField({
-    required this.label,
-    required this.value,
-    this.maxLines = 1,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: AppStyle.regular.copyWith(
-            color: AppColor.blackColor.withValues(alpha: 0.5),
-            fontSize: 11,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        const SizedBox(height: 2),
-        Text(
-          value,
-          maxLines: maxLines,
-          overflow: TextOverflow.ellipsis,
-          style: AppStyle.regular.copyWith(
-            color: AppColor.blackColor.withValues(alpha: 0.85),
-            fontSize: 13,
-            height: 1.35,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-      ],
     );
   }
 }
