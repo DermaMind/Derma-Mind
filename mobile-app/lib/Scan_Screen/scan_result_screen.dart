@@ -9,9 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
-// ScanResultScreen — "Final Assessment"
-// Shown after the user completes all follow-up questions.
-// All data is dummy / hardcoded — replace with real API response later.
+// ScanResultScreen — final assessment from /diagnose/complete
 // ─────────────────────────────────────────────────────────────────────────────
 
 class ScanResultScreen extends StatefulWidget {
@@ -30,15 +28,18 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
     switch (severity.toLowerCase()) {
       case 'high':
       case 'severe':
-        return const Color(0xFFF97316);
+      case 'عالية':
+        return const Color(0xFF10B981);
       case 'moderate':
       case 'medium':
+      case 'متوسطة':
         return const Color(0xFFF59E0B);
       case 'low':
       case 'mild':
-        return const Color(0xFF10B981);
-      default:
+      case 'منخفضة':
         return const Color(0xFFF97316);
+      default:
+        return const Color(0xFFF59E0B);
     }
   }
 
@@ -156,14 +157,18 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
                             label: result.severity,
                             color: _severityColor(result.severity),
                           ),
-                        if (result.severity.isNotEmpty) const SizedBox(width: 10),
-                        Text(
-                          '${(result.confidence <= 1.0 ? result.confidence * 100 : result.confidence).toStringAsFixed(0)}% confidence',
-                          style: AppStyle.regular.copyWith(
-                            color: Colors.white70,
-                            fontSize: 13,
+                        if (!result.isConfidenceLevel &&
+                            result.confidence > 0) ...[
+                          if (result.severity.isNotEmpty)
+                            const SizedBox(width: 10),
+                          Text(
+                            '${(result.confidence <= 1.0 ? result.confidence * 100 : result.confidence).toStringAsFixed(0)}% confidence',
+                            style: AppStyle.regular.copyWith(
+                              color: Colors.white70,
+                              fontSize: 13,
+                            ),
                           ),
-                        ),
+                        ],
                       ],
                     ),
                   ],

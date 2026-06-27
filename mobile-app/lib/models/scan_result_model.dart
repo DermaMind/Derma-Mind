@@ -19,16 +19,36 @@ class ScanResultModel {
     this.mode,
   });
 
+  bool get isConfidenceLevel =>
+      severity == 'عالية' ||
+      severity == 'متوسطة' ||
+      severity == 'منخفضة' ||
+      severity.toLowerCase() == 'high' ||
+      severity.toLowerCase() == 'moderate' ||
+      severity.toLowerCase() == 'medium' ||
+      severity.toLowerCase() == 'low';
+
   factory ScanResultModel.fromJson(dynamic rawJson) {
     try {
       final json = rawJson is Map<String, dynamic>
           ? rawJson
-          : <String, dynamic>{};
+          : rawJson is Map
+              ? Map<String, dynamic>.from(rawJson)
+              : <String, dynamic>{};
 
-      final disclaimer = json['disclaimer']?.toString();
-      final mode = json['mode']?.toString();
+      final source = json['data'] is Map<String, dynamic>
+          ? json['data'] as Map<String, dynamic>
+          : json;
 
-      final top3Raw = json['top3'];
+      if (source.containsKey('confidence_level') ||
+          source.containsKey('name_localized')) {
+        return ScanResultModel.fromDiagnoseComplete(source);
+      }
+
+      final disclaimer = source['disclaimer']?.toString();
+      final mode = source['mode']?.toString();
+
+      final top3Raw = source['top3'];
       final top3 = top3Raw is List ? top3Raw : <dynamic>[];
 
       if (top3.isNotEmpty) {
@@ -36,22 +56,6 @@ class ScanResultModel {
         final first = firstRaw is Map<String, dynamic>
             ? firstRaw
             : <String, dynamic>{};
-
-        List<String> recommendations = [];
-        final rawRec = first['care_recommendations'];
-
-        if (rawRec is List) {
-          recommendations = rawRec
-              .map((e) => e?.toString() ?? '')
-              .where((s) => s.isNotEmpty)
-              .toList();
-        } else if (rawRec is String && rawRec.isNotEmpty) {
-          recommendations = rawRec
-              .split('.')
-              .map((s) => s.trim())
-              .where((s) => s.isNotEmpty)
-              .toList();
-        }
 
         final nameAr = first['name_ar']?.toString() ?? '';
         final nameEn = first['disease']?.toString() ?? '';
@@ -62,7 +66,7 @@ class ScanResultModel {
           confidence: _toDouble(first['confidence']),
           severity: first['likelihood']?.toString() ?? '',
           description: first['personalized_insight']?.toString() ?? '',
-          recommendations: recommendations,
+          recommendations: _parseRecommendations(first['care_recommendations']),
           imageUrl: first['imageUrl']?.toString() ??
               first['image_url']?.toString(),
           disclaimer: disclaimer,
@@ -84,6 +88,20 @@ class ScanResultModel {
     }
   }
 
+  factory ScanResultModel.fromDiagnoseComplete(Map<String, dynamic> json) {
+    final nameLocalized = json['name_localized']?.toString() ?? '';
+    final diseaseEn = json['disease']?.toString() ?? '';
+
+    return ScanResultModel(
+      disease: nameLocalized.isNotEmpty ? nameLocalized : diseaseEn,
+      confidence: 0,
+      severity: json['confidence_level']?.toString() ?? '',
+      description: json['personalized_insight']?.toString() ?? '',
+      recommendations: _parseRecommendations(json['care_recommendations']),
+      disclaimer: json['disclaimer']?.toString(),
+    );
+  }
+
   factory ScanResultModel.dummy() {
     return const ScanResultModel(
       disease: '',
@@ -92,6 +110,30 @@ class ScanResultModel {
       description: '',
       recommendations: [],
     );
+  }
+
+  static List<String> _parseRecommendations(dynamic rawRec) {
+    if (rawRec is List) {
+      return rawRec
+          .map((e) => e?.toString() ?? '')
+          .where((s) => s.isNotEmpty)
+          .toList();
+    }
+    if (rawRec is String && rawRec.isNotEmpty) {
+      final lines = rawRec
+          .split('\n')
+          .map((s) => s.trim())
+          .where((s) => s.isNotEmpty)
+          .toList();
+      if (lines.length > 1) return lines;
+
+      return rawRec
+          .split(RegExp(r'(?<=\.)\s+'))
+          .map((s) => s.trim())
+          .where((s) => s.isNotEmpty)
+          .toList();
+    }
+    return const [];
   }
 
   static double _toDouble(dynamic value) {

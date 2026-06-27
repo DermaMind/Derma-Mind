@@ -1,42 +1,76 @@
 class ScanAnalyzeModel {
-  final List<ScanPrediction> predictions;
+  final ModelResult modelResult;
   final List<ScanQuestion> questions;
 
   const ScanAnalyzeModel({
-    required this.predictions,
+    required this.modelResult,
     required this.questions,
   });
+
+  List<ScanPrediction> get predictions => modelResult.top3;
 
   factory ScanAnalyzeModel.fromJson(Map<String, dynamic> json) {
     final source = json['data'] is Map<String, dynamic>
         ? json['data'] as Map<String, dynamic>
         : json;
 
-    final modelResult = source['model_result'] is Map<String, dynamic>
+    final modelResultRaw = source['model_result'] is Map<String, dynamic>
         ? source['model_result'] as Map<String, dynamic>
         : source;
 
-    final top3List = modelResult['top3'] is List
-        ? modelResult['top3'] as List
-        : <dynamic>[];
-
-    final questionsList = modelResult['questions'] is List
-        ? modelResult['questions'] as List
-        : source['questions'] is List
-            ? source['questions'] as List
+    final questionsList = source['questions'] is List
+        ? source['questions'] as List
+        : modelResultRaw['questions'] is List
+            ? modelResultRaw['questions'] as List
             : <dynamic>[];
 
     return ScanAnalyzeModel(
-      predictions: top3List
-          .whereType<Map<String, dynamic>>()
-          .map((e) => ScanPrediction.fromJson(e))
-          .toList(),
+      modelResult: ModelResult.fromJson(modelResultRaw),
       questions: questionsList
           .whereType<Map<String, dynamic>>()
           .map((e) => ScanQuestion.fromJson(e))
           .toList(),
     );
   }
+}
+
+class ModelResult {
+  final List<ScanPrediction> top3;
+  final Map<String, double> rawScores;
+
+  const ModelResult({
+    required this.top3,
+    required this.rawScores,
+  });
+
+  factory ModelResult.fromJson(Map<String, dynamic> json) {
+    final top3List =
+        json['top3'] is List ? json['top3'] as List : <dynamic>[];
+
+    final rawScoresRaw = json['raw_scores'];
+    final rawScores = <String, double>{};
+    if (rawScoresRaw is Map) {
+      rawScoresRaw.forEach((key, value) {
+        final parsed = value is num
+            ? value.toDouble()
+            : double.tryParse(value?.toString() ?? '') ?? 0.0;
+        rawScores[key.toString()] = parsed;
+      });
+    }
+
+    return ModelResult(
+      top3: top3List
+          .whereType<Map<String, dynamic>>()
+          .map((e) => ScanPrediction.fromJson(e))
+          .toList(),
+      rawScores: rawScores,
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+        'top3': top3.map((e) => e.toJson()).toList(),
+        'raw_scores': rawScores,
+      };
 }
 
 class ScanPrediction {
@@ -62,6 +96,12 @@ class ScanPrediction {
       confidence: confidence,
     );
   }
+
+  Map<String, dynamic> toJson() => {
+        'disease': disease,
+        'name_ar': diseaseAr,
+        'confidence': confidence,
+      };
 }
 
 class ScanQuestion {

@@ -76,9 +76,10 @@ class _CameraScreenState extends State<CameraScreen> {
       debugPrint("Exists: ${file.existsSync()}");
       debugPrint("Length: ${file.lengthSync()} bytes");
 
-      final response = await ApiService.analyzeSkin(
+      final lang = Localizations.localeOf(context).languageCode;
+      final response = await ApiService.diagnoseStart(
         imagePath: _image!.path,
-
+        lang: lang,
       );
       debugPrint(
         "Questions = ${response.data?.questions.length}",
@@ -96,8 +97,8 @@ class _CameraScreenState extends State<CameraScreen> {
           context,
           ScanFollowupScreen.routeName,
           arguments: {
-            "imagePath": _image!.path,
             "analyze": response.data,
+            "lang": lang,
           },
         );
 

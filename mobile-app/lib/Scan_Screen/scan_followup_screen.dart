@@ -1,6 +1,6 @@
 import 'package:dermamind_app/Scan_Screen/scan_result_screen.dart';
+import 'package:dermamind_app/models/diagnose_answer_model.dart';
 import 'package:dermamind_app/models/scan_analyze_model.dart';
-import 'package:dermamind_app/models/scan_result_model.dart';
 import 'package:dermamind_app/providers/skin_test_provider.dart';
 import 'package:dermamind_app/services/api_service.dart';
 import 'package:dermamind_app/utils/app_color.dart';
@@ -9,9 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
-// ScanFollowupScreen
-// Shown after the dummy "AI analysis". Presents 5 follow-up questions so the
-// app can refine the assessment before showing the final result.
+// ScanFollowupScreen — interactive diagnosis questions from /diagnose/start
 // ─────────────────────────────────────────────────────────────────────────────
 
 class ScanFollowupScreen extends StatefulWidget {
@@ -28,8 +26,9 @@ class _ScanFollowupScreenState extends State<ScanFollowupScreen> {
   int _currentQuestion = 0;
   int? _selectedOption;
   bool _isAnalyzing = false;
+  bool _initialized = false;
   String _loadingMessage = 'Analyzing your skin...';
-  String _imagePath = '';
+  String _lang = 'ar';
   String? _errorMessage;
   final Map<int, String> _answers = {};
 
@@ -58,16 +57,18 @@ class _ScanFollowupScreenState extends State<ScanFollowupScreen> {
   void didChangeDependencies() {
     super.didChangeDependencies();
 
-    if (_imagePath.isNotEmpty) return;
+    if (_initialized) return;
 
     final args = ModalRoute.of(context)?.settings.arguments;
 
     if (args is Map) {
-      _imagePath = args["imagePath"] as String? ?? '';
-      analyzeResult = args["analyze"] as ScanAnalyzeModel;
+      analyzeResult = args['analyze'] as ScanAnalyzeModel;
+      _lang = args['lang'] as String? ?? 'ar';
+      _initialized = true;
 
       _selectedOption = null;
-      if (analyzeResult.questions.isNotEmpty && _answers[_currentQuestion] != null) {
+      if (analyzeResult.questions.isNotEmpty &&
+          _answers[_currentQuestion] != null) {
         _selectedOption = analyzeResult.questions[_currentQuestion]
             .options
             .indexOf(_answers[_currentQuestion]!);
@@ -95,7 +96,7 @@ class _ScanFollowupScreenState extends State<ScanFollowupScreen> {
             : null;
       });
     } else {
-      _analyzeImage();
+      _submitDiagnosis();
     }
   }
 
@@ -105,20 +106,19 @@ class _ScanFollowupScreenState extends State<ScanFollowupScreen> {
     _answers[_currentQuestion] = currentQuestion.options[_selectedOption!];
   }
 
-  String _buildMedicalHistory() {
-    if (_answers.isEmpty) return '';
-
-    return _answers.entries
-        .where((entry) => entry.key >= 0 && entry.key < _questions.length)
-        .map((entry) {
-          final question = _questions[entry.key].question;
-          return '$question: ${entry.value}.';
-        })
-        .join(' ');
+  List<DiagnoseAnswer> _buildAnswersPayload() {
+    return List.generate(_questions.length, (index) {
+      final question = _questions[index];
+      return DiagnoseAnswer(
+        questionId: question.id,
+        question: question.question,
+        answer: _answers[index] ?? '',
+      );
+    });
   }
 
-  Future<void> _analyzeImage() async {
-    if (_imagePath.isEmpty || _isAnalyzing) return;
+  Future<void> _submitDiagnosis() async {
+    if (_isAnalyzing) return;
     _saveCurrentAnswer();
     setState(() {
       _isAnalyzing = true;
@@ -127,14 +127,14 @@ class _ScanFollowupScreenState extends State<ScanFollowupScreen> {
     });
 
     try {
-      final medicalHistory = _buildMedicalHistory().trim();
       final skinType = context.read<SkinTestProvider>().skinType;
-      final response = await ApiService.analyzeSkinRaw(
-        imagePath: _imagePath,
+      final response = await ApiService.diagnoseComplete(
+        modelResult: analyzeResult.modelResult.toJson(),
+        answers: _buildAnswersPayload().map((a) => a.toJson()).toList(),
         skinType: skinType.isNotEmpty && skinType != 'Unknown'
             ? skinType
-            : null,
-        medicalHistory: medicalHistory.isNotEmpty ? medicalHistory : null,
+            : 'Unknown',
+        lang: _lang,
       );
 
       if (!mounted) return;
@@ -147,28 +147,10 @@ class _ScanFollowupScreenState extends State<ScanFollowupScreen> {
         return;
       }
 
-      final newAnalyzeResult = ScanAnalyzeModel.fromJson(response.data!);
-      if (newAnalyzeResult.questions.isNotEmpty) {
-        _answers.clear();
-        setState(() {
-          analyzeResult = newAnalyzeResult;
-          _currentQuestion = 0;
-          _selectedOption = _answers[_currentQuestion] != null
-              ? analyzeResult.questions[_currentQuestion]
-                  .options
-                  .indexOf(_answers[_currentQuestion]!)
-              : null;
-        });
-        return;
-      }
-
-      final result = ScanResultModel.fromJson(response.data!);
-      if (!mounted) return;
-
       Navigator.pushReplacementNamed(
         context,
         ScanResultScreen.routeName,
-        arguments: result,
+        arguments: response.data,
       );
     } catch (_) {
       if (mounted) {

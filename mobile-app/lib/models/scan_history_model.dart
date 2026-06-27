@@ -34,7 +34,11 @@ class ScanHistoryItem {
   // Top disease name
   String get diseaseName => result.disease;
 
-  // Confidence
-  String get confidenceLabel =>
-      '${result.confidence.toStringAsFixed(0)}%';
+  // Confidence or confidence level label
+  String get confidenceLabel {
+    if (result.isConfidenceLevel && result.severity.isNotEmpty) {
+      return result.severity;
+    }
+    return '${result.confidence.toStringAsFixed(0)}%';
+  }
 }

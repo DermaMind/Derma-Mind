@@ -10,6 +10,7 @@ import '../models/chatbot_response_model.dart';
 import '../models/map_place_model.dart';
 import '../models/product_model_api.dart';
 import '../models/scan_analyze_model.dart';
+import '../models/scan_result_model.dart';
 import '../models/skin_test_question_model.dart';
 import '../models/skin_test_result_model.dart';
 import '../models/user_model.dart';
@@ -221,6 +222,73 @@ class ApiService {
       return ApiResponse.error(_exceptionMessage(e));
     }
   }
+
+  static Future<ApiResponse<ScanAnalyzeModel>> diagnoseStart({
+    required String imagePath,
+    String lang = 'ar',
+    String? medicalHistory,
+  }) async {
+    try {
+      final request = http.MultipartRequest(
+        'POST',
+        Uri.parse('$baseUrl/api/DermaScan/diagnose/start'),
+      );
+      request.headers.addAll(_authHeaders);
+      request.files.add(
+        await http.MultipartFile.fromPath(
+          'image',
+          imagePath,
+          contentType: MediaType('image', 'jpeg'),
+        ),
+      );
+      request.fields['lang'] = lang;
+      if (medicalHistory != null && medicalHistory.isNotEmpty) {
+        request.fields['medical_history'] = medicalHistory;
+      }
+
+      final streamed = await request.send();
+      final response = await http.Response.fromStream(streamed);
+      debugPrint('diagnose/start STATUS => ${response.statusCode}');
+      debugPrint('diagnose/start BODY => ${response.body}');
+      return _handleResponse(
+        response,
+        (json) => ScanAnalyzeModel.fromJson(json as Map<String, dynamic>),
+      );
+    } catch (e) {
+      return ApiResponse.error(_exceptionMessage(e));
+    }
+  }
+
+  static Future<ApiResponse<ScanResultModel>> diagnoseComplete({
+    required Map<String, dynamic> modelResult,
+    required List<Map<String, dynamic>> answers,
+    required String skinType,
+    String? medicalHistory,
+    String lang = 'ar',
+  }) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/api/DermaScan/diagnose/complete'),
+        headers: _headers,
+        body: jsonEncode({
+          'model_result': modelResult,
+          'answers': answers,
+          'skin_type': skinType,
+          'medical_history': medicalHistory ?? '',
+          'lang': lang,
+        }),
+      );
+      debugPrint('diagnose/complete STATUS => ${response.statusCode}');
+      debugPrint('diagnose/complete BODY => ${response.body}');
+      return _handleResponse(
+        response,
+        (json) => ScanResultModel.fromJson(json as Map<String, dynamic>),
+      );
+    } catch (e) {
+      return ApiResponse.error(_exceptionMessage(e));
+    }
+  }
+
   // GET /api/DermaScan/history
   static Future<ApiResponse<List<dynamic>>> getScanHistory() async {
     try {
