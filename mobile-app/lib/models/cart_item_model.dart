@@ -24,7 +24,11 @@ class CartItemModel {
       name: json['name'] ?? json['productName'] ?? '',
       brand: json['brand'] ?? '',
       price: _toDouble(json['price']),
-      imageUrl: json['imageUrl'] ?? json['image_url'] ?? json['image'],
+      imageUrl: json['imageUrl'] ??
+          json['image_url'] ??
+          json['image'] ??
+          json['ImageUrl'] ??
+          json['productImage'],
       quantity: _toInt(json['quantity'] ?? 1),
     );
   }

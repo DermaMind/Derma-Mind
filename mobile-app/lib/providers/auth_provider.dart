@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/user_model.dart';
 import '../services/api_service.dart';
+import '../services/google_auth_service.dart';
 import '../utils/prefs_helper.dart';
 
 class AuthProvider extends ChangeNotifier {
@@ -12,6 +13,7 @@ class AuthProvider extends ChangeNotifier {
   String? _profileImageUrl;
   bool _isLoggedIn = false;
   bool _isLoading = false;
+  bool _isGoogleLoading = false;
 
   String get userName => _userName;
   String get email => _email;
@@ -21,6 +23,7 @@ class AuthProvider extends ChangeNotifier {
   String? get profileImageUrl => _profileImageUrl;
   bool get isLoggedIn => _isLoggedIn;
   bool get isLoading => _isLoading;
+  bool get isGoogleLoading => _isGoogleLoading;
 
   Future<void> loadFromPrefs() async {
     final token = await PrefsHelper.getToken();
@@ -83,6 +86,42 @@ class AuthProvider extends ChangeNotifier {
       );
     } finally {
       _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> googleSignIn() async {
+    _isGoogleLoading = true;
+    notifyListeners();
+
+    try {
+      final idToken = await GoogleAuthService.signInAndGetIdToken();
+      if (idToken == null) return;
+
+      final res = await ApiService.googleLogin(idToken: idToken);
+      if (!res.success || res.data == null) {
+        throw Exception(res.message ?? 'Google sign-in failed');
+      }
+
+      final authData = res.data!;
+      final token = authData.token;
+
+      ApiService.setToken(token);
+      await PrefsHelper.saveToken(token);
+
+      _applyUserModel(authData.user);
+      if (authData.user.email.isNotEmpty) _email = authData.user.email;
+      _isLoggedIn = true;
+
+      await PrefsHelper.saveLoginData(
+        name: _userName,
+        email: _email,
+        phone: _phone,
+        dob: _dateOfBirth,
+        gender: _gender,
+      );
+    } finally {
+      _isGoogleLoading = false;
       notifyListeners();
     }
   }
@@ -152,14 +191,24 @@ class AuthProvider extends ChangeNotifier {
     required String phone,
     required String dob,
     required String gender,
+    String? imagePath,
   }) async {
-    await ApiService.updateProfile(fullName: name);
+    final res = await ApiService.updateProfile(
+      fullName: name,
+      phoneNumber: phone.isNotEmpty ? phone : null,
+      imagePath: imagePath,
+    );
+    if (!res.success) {
+      throw Exception(res.message ?? 'Failed to update profile');
+    }
 
     _userName = name;
     _email = email;
     _phone = phone;
     _dateOfBirth = dob;
     _gender = gender;
+
+    await refreshProfile();
 
     await PrefsHelper.saveLoginData(
       name: name,
@@ -202,5 +251,6 @@ class AuthProvider extends ChangeNotifier {
   void _applyUserModel(UserModel user) {
     _userName = user.fullName.isNotEmpty ? user.fullName : _userName;
     _profileImageUrl = user.profileImage;
+    if (user.email.isNotEmpty) _email = user.email;
   }
 }

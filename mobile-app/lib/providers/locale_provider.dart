@@ -7,8 +7,15 @@ class LocaleProvider extends ChangeNotifier {
   Locale get locale => _locale;
 
   Future<void> loadFromPrefs() async {
-    final code = await PrefsHelper.loadLocale();
-    _locale = Locale(code);
+    final saved = await PrefsHelper.loadLocaleOrNull();
+    if (saved != null) {
+      _locale = Locale(saved == 'ar' ? 'ar' : 'en');
+    } else {
+      final systemLang =
+          WidgetsBinding.instance.platformDispatcher.locale.languageCode;
+      _locale = Locale(systemLang == 'ar' ? 'ar' : 'en');
+      await PrefsHelper.saveLocale(_locale.languageCode);
+    }
     notifyListeners();
   }
 
@@ -17,4 +24,5 @@ class LocaleProvider extends ChangeNotifier {
     _locale = locale;
     await PrefsHelper.saveLocale(locale.languageCode);
     notifyListeners();
-  }}
+  }
+}

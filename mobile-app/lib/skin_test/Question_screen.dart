@@ -33,22 +33,21 @@ class _QuestionScreenState extends State<QuestionScreen> {
       // Get current app language
       final locale = Localizations.localeOf(context).languageCode;
       provider.setLang(locale);
-      await provider.loadQuestionsFromApi(lang: locale);
+      await provider.loadQuestionsFromApi(lang: locale, force: true);
       setState(() {});
     });
   }
   void skipDialog() {
+    final l10n = AppLocalizations.of(context)!;
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
-        title: const Text("Skip Skin Test?"),
-        content: const Text(
-          "You can always take it later.",
-        ),
+        title: Text(l10n.skipSkinTestTitle),
+        content: Text(l10n.skipSkinTestMessage),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text("Cancel"),
+            child: Text(l10n.cancel),
           ),
           TextButton(
             onPressed: () {
@@ -60,9 +59,9 @@ class _QuestionScreenState extends State<QuestionScreen> {
                     (route) => false,
               );
             },
-            child: const Text(
-              "Skip",
-              style: TextStyle(color: Colors.red),
+            child: Text(
+              l10n.skip,
+              style: const TextStyle(color: Colors.red),
             ),
           )
         ],
@@ -114,6 +113,7 @@ class _QuestionScreenState extends State<QuestionScreen> {
   }
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final provider = context.watch<SkinTestProvider>();
 
     if (!provider.questionsLoaded || provider.apiQuestions.isEmpty) {
@@ -131,7 +131,7 @@ class _QuestionScreenState extends State<QuestionScreen> {
       backgroundColor: AppColor.primaryColor,
       body: SafeArea(
         child: loading
-            ? const Center(
+            ?  Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -140,7 +140,7 @@ class _QuestionScreenState extends State<QuestionScreen> {
               ),
               SizedBox(height: 20),
               Text(
-                "Analyzing your skin...",
+                l10n.analyzingSkin,
               )
             ],
           ),
@@ -155,9 +155,9 @@ class _QuestionScreenState extends State<QuestionScreen> {
                 children: [
                   TextButton(
                     onPressed: skipDialog,
-                    child: const Text(
-                      "Skip",
-                      style: TextStyle(
+                    child: Text(
+                      l10n.skip,
+                      style: const TextStyle(
                         color: Colors.grey,
                       ),
                     ),
@@ -166,8 +166,10 @@ class _QuestionScreenState extends State<QuestionScreen> {
               ),
 
               QuestionHeader(
-                title:
-                "Question ${provider.currentQuestion + 1} of ${provider.totalQuestions}",
+                title: l10n.questionProgress(
+                  provider.currentQuestion + 1,
+                  provider.totalQuestions,
+                ),
                 rightIcon:
                 const Icon(Icons.close),
                 onRightTap: skipDialog,
@@ -236,13 +238,9 @@ class _QuestionScreenState extends State<QuestionScreen> {
                   selectedIndex != null,
                   title:
                   provider.currentQuestion ==
-                      provider
-                          .totalQuestions -
-                          1
-                      ? "Finish"
-                      : AppLocalizations.of(
-                      context)!
-                      .next,
+                      provider.totalQuestions - 1
+                      ? l10n.finish
+                      : l10n.next,
                   onPressed: () =>
                       nextQuestion(
                         provider,

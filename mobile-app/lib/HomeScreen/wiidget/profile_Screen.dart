@@ -7,9 +7,11 @@ import 'package:dermamind_app/skin_test/Question_screen.dart';
 import 'package:dermamind_app/skin_test/sucessedScreen.dart';
 import 'package:dermamind_app/utils/app_color.dart';
 import 'package:dermamind_app/utils/app_style.dart';
+import 'package:dermamind_app/utils/profile_avatar.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../l10n/app_localizations.dart';
 import '../../Scan_Screen/scan_history_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -30,6 +32,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final screenHeight = MediaQuery.of(context).size.height;
 
     return Scaffold(
@@ -43,7 +46,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               left: 0,
               right: 0,
               height: screenHeight * 0.38,
-              child: _buildBlueHeader(context),
+              child: _buildBlueHeader(context, l10n),
             ),
 
             // ── White panel (slides up, overlaps blue) ─────────────────────
@@ -58,7 +61,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   borderRadius:
                       BorderRadius.vertical(top: Radius.circular(28)),
                 ),
-                child: _buildMenuList(context),
+                child: _buildMenuList(context, l10n),
               ),
             ),
           ],
@@ -69,7 +72,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   // ── Blue header: avatar + name + stat cards ────────────────────────────────
 
-  Widget _buildBlueHeader(BuildContext context) {
+  Widget _buildBlueHeader(BuildContext context, AppLocalizations l10n) {
     final auth = context.watch<AuthProvider>();
     final skinTest = context.watch<SkinTestProvider>();
     final hasResult = skinTest.hasSkinResult;
@@ -79,15 +82,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
           // Avatar
-          Container(
-            width: 80,
-            height: 80,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: Colors.white.withValues(alpha: 0.2),
-              border: Border.all(color: Colors.white, width: 3),
-            ),
-            child: const Icon(Icons.person, color: Colors.white, size: 44),
+          ProfileAvatar(
+            networkUrl: auth.profileImageUrl,
+            size: 80,
           ),
           const SizedBox(height: 10),
           // Name
@@ -108,21 +105,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 Expanded(
                   child: _StatCard(
                     value: hasResult ? skinTest.skinType : '—',
-                    label: 'Skin Type',
+                    label: l10n.skinType,
                   ),
                 ),
                 const SizedBox(width: 10),
                 Expanded(
                   child: _StatCard(
-                    value: hasResult ? skinTest.skinHistory : 'Not taken yet',
-                    label: 'Skin History',
+                    value: hasResult ? skinTest.skinHistory : l10n.notTakenYet,
+                    label: l10n.skinHistory,
                   ),
                 ),
                 const SizedBox(width: 10),
                 Expanded(
                   child: _StatCard(
                     value: hasResult ? skinTest.lastScan : '—',
-                    label: 'Last Scan',
+                    label: l10n.lastScan,
                   ),
                 ),
               ],
@@ -135,7 +132,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   // ── Menu list ──────────────────────────────────────────────────────────────
 
-  Widget _buildMenuList(BuildContext context) {
+  Widget _buildMenuList(BuildContext context, AppLocalizations l10n) {
     return ListView(
       padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
       children: [
@@ -143,7 +140,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           icon: Icons.person_outline,
           iconColor: AppColor.blueColor,
           iconBg: const Color(0xFFEFF6FF),
-          title: 'My Skin Profile',
+          title: l10n.mySkinProfile,
           onTap: () => Navigator.pushNamed(
             context,
             ScanHistoryScreen.routeName,
@@ -153,7 +150,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           icon: Icons.assignment_outlined,
           iconColor: const Color(0xFF8B5CF6),
           iconBg: const Color(0xFFF5F3FF),
-          title: 'Retake Skin Test',
+          title: l10n.retakeSkinTest,
           onTap: () {
             context.read<SkinTestProvider>().resetTest();
             Navigator.pushNamed(context, QuestionScreen.RoutName);
@@ -163,7 +160,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           icon: Icons.settings_outlined,
           iconColor: AppColor.grayColor,
           iconBg: const Color(0xFFF3F4F6),
-          title: 'Settings & Privacy',
+          title: l10n.settingsPrivacy,
           onTap: () => Navigator.push(
             context,
             SlidePageRoute(page: const SettingsScreen()),
@@ -182,7 +179,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
         ),
         const SizedBox(height: 8),
-        _LogoutTile(),
+        _LogoutTile(label: l10n.logout),
       ],
     );
   }
@@ -297,6 +294,10 @@ class _MenuItem extends StatelessWidget {
 // ── Logout tile ───────────────────────────────────────────────────────────────
 
 class _LogoutTile extends StatelessWidget {
+  final String label;
+
+  const _LogoutTile({required this.label});
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -324,7 +325,7 @@ class _LogoutTile extends StatelessWidget {
           child: const Icon(Icons.logout, color: Colors.red, size: 20),
         ),
         title: Text(
-          'Logout',
+          label,
           style: AppStyle.regular.copyWith(
             color: Colors.red,
             fontSize: 15,

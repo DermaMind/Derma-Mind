@@ -137,7 +137,7 @@ abstract class AppLocalizations {
   /// No description provided for @dontHaveAnAccount.
   ///
   /// In en, this message translates to:
-  /// **'Don’t have an Account?'**
+  /// **'Don\'t have an Account?'**
   String get dontHaveAnAccount;
 
   /// No description provided for @createAccount.
@@ -151,6 +151,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'OR'**
   String get or;
+
+  /// No description provided for @signInWithGoogle.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue with Google'**
+  String get signInWithGoogle;
 
   /// No description provided for @login.
   ///
@@ -191,13 +197,13 @@ abstract class AppLocalizations {
   /// No description provided for @question.
   ///
   /// In en, this message translates to:
-  /// **'What’s your skin type?'**
+  /// **'What\'s your skin type?'**
   String get question;
 
   /// No description provided for @subtitle.
   ///
   /// In en, this message translates to:
-  /// **'We’ll recommend the ingredients your skin will love.'**
+  /// **'We\'ll recommend the ingredients your skin will love.'**
   String get subtitle;
 
   /// No description provided for @next.
@@ -206,10 +212,52 @@ abstract class AppLocalizations {
   /// **'Next'**
   String get next;
 
+  /// No description provided for @finish.
+  ///
+  /// In en, this message translates to:
+  /// **'Finish'**
+  String get finish;
+
+  /// No description provided for @skip.
+  ///
+  /// In en, this message translates to:
+  /// **'Skip'**
+  String get skip;
+
+  /// No description provided for @cancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get cancel;
+
+  /// No description provided for @questionProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Question {current} of {total}'**
+  String questionProgress(int current, int total);
+
+  /// No description provided for @analyzingSkin.
+  ///
+  /// In en, this message translates to:
+  /// **'Analyzing your skin...'**
+  String get analyzingSkin;
+
+  /// No description provided for @skipSkinTestTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Skip Skin Test?'**
+  String get skipSkinTestTitle;
+
+  /// No description provided for @skipSkinTestMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'You can always take it later.'**
+  String get skipSkinTestMessage;
+
   /// No description provided for @question2.
   ///
   /// In en, this message translates to:
-  /// **'What’s your gender?'**
+  /// **'What\'s your gender?'**
   String get question2;
 
   /// No description provided for @subtitle2.
@@ -257,7 +305,7 @@ abstract class AppLocalizations {
   /// No description provided for @home_subtitle.
   ///
   /// In en, this message translates to:
-  /// **'Let’s take care of your skin journey.'**
+  /// **'Let\'s take care of your skin journey.'**
   String get home_subtitle;
 
   /// No description provided for @testSkinTypeTitle.
@@ -391,6 +439,348 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'You\'re all caught up!'**
   String get noNotificationsSubtitle;
+
+  /// No description provided for @products.
+  ///
+  /// In en, this message translates to:
+  /// **'Products'**
+  String get products;
+
+  /// No description provided for @searchProducts.
+  ///
+  /// In en, this message translates to:
+  /// **'Search products...'**
+  String get searchProducts;
+
+  /// No description provided for @allCategories.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get allCategories;
+
+  /// No description provided for @reviews.
+  ///
+  /// In en, this message translates to:
+  /// **'reviews'**
+  String get reviews;
+
+  /// No description provided for @description.
+  ///
+  /// In en, this message translates to:
+  /// **'Description'**
+  String get description;
+
+  /// No description provided for @suitableForSkinTypes.
+  ///
+  /// In en, this message translates to:
+  /// **'Suitable for skin types'**
+  String get suitableForSkinTypes;
+
+  /// No description provided for @keyIngredients.
+  ///
+  /// In en, this message translates to:
+  /// **'Key Ingredients'**
+  String get keyIngredients;
+
+  /// No description provided for @addToCart.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to Cart'**
+  String get addToCart;
+
+  /// No description provided for @addedToCart.
+  ///
+  /// In en, this message translates to:
+  /// **'added to cart!'**
+  String get addedToCart;
+
+  /// No description provided for @viewCart.
+  ///
+  /// In en, this message translates to:
+  /// **'View Cart'**
+  String get viewCart;
+
+  /// No description provided for @proceedToCheckout.
+  ///
+  /// In en, this message translates to:
+  /// **'Proceed to Checkout'**
+  String get proceedToCheckout;
+
+  /// No description provided for @myCart.
+  ///
+  /// In en, this message translates to:
+  /// **'My Cart'**
+  String get myCart;
+
+  /// No description provided for @clearCart.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear Cart'**
+  String get clearCart;
+
+  /// No description provided for @clearCartConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove all items from your cart?'**
+  String get clearCartConfirm;
+
+  /// No description provided for @clear.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear'**
+  String get clear;
+
+  /// No description provided for @emptyCart.
+  ///
+  /// In en, this message translates to:
+  /// **'Your cart is empty'**
+  String get emptyCart;
+
+  /// No description provided for @emptyCartSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Add products to get started'**
+  String get emptyCartSubtitle;
+
+  /// No description provided for @browseProducts.
+  ///
+  /// In en, this message translates to:
+  /// **'Browse Products'**
+  String get browseProducts;
+
+  /// No description provided for @orderSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'Order Summary'**
+  String get orderSummary;
+
+  /// No description provided for @subtotal.
+  ///
+  /// In en, this message translates to:
+  /// **'Subtotal ({count} items)'**
+  String subtotal(int count);
+
+  /// No description provided for @discount.
+  ///
+  /// In en, this message translates to:
+  /// **'Discount'**
+  String get discount;
+
+  /// No description provided for @delivery.
+  ///
+  /// In en, this message translates to:
+  /// **'Delivery'**
+  String get delivery;
+
+  /// No description provided for @free.
+  ///
+  /// In en, this message translates to:
+  /// **'Free'**
+  String get free;
+
+  /// No description provided for @total.
+  ///
+  /// In en, this message translates to:
+  /// **'Total'**
+  String get total;
+
+  /// No description provided for @placingOrder.
+  ///
+  /// In en, this message translates to:
+  /// **'Placing Order...'**
+  String get placingOrder;
+
+  /// No description provided for @promoCodeHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter promo code'**
+  String get promoCodeHint;
+
+  /// No description provided for @apply.
+  ///
+  /// In en, this message translates to:
+  /// **'Apply'**
+  String get apply;
+
+  /// No description provided for @promoInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Promo code not valid'**
+  String get promoInvalid;
+
+  /// No description provided for @orderPlaced.
+  ///
+  /// In en, this message translates to:
+  /// **'Order Placed!'**
+  String get orderPlaced;
+
+  /// No description provided for @orderPlacedMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Your order has been placed successfully.'**
+  String get orderPlacedMessage;
+
+  /// No description provided for @ok.
+  ///
+  /// In en, this message translates to:
+  /// **'OK'**
+  String get ok;
+
+  /// No description provided for @checkoutFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Checkout failed. Please try again.'**
+  String get checkoutFailed;
+
+  /// No description provided for @settings.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings'**
+  String get settings;
+
+  /// No description provided for @editProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Profile'**
+  String get editProfile;
+
+  /// No description provided for @saveChanges.
+  ///
+  /// In en, this message translates to:
+  /// **'Save Changes'**
+  String get saveChanges;
+
+  /// No description provided for @profileUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile updated successfully!'**
+  String get profileUpdated;
+
+  /// No description provided for @mySkinProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'My Skin Profile'**
+  String get mySkinProfile;
+
+  /// No description provided for @retakeSkinTest.
+  ///
+  /// In en, this message translates to:
+  /// **'Retake Skin Test'**
+  String get retakeSkinTest;
+
+  /// No description provided for @settingsPrivacy.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings & Privacy'**
+  String get settingsPrivacy;
+
+  /// No description provided for @logout.
+  ///
+  /// In en, this message translates to:
+  /// **'Logout'**
+  String get logout;
+
+  /// No description provided for @skinType.
+  ///
+  /// In en, this message translates to:
+  /// **'Skin Type'**
+  String get skinType;
+
+  /// No description provided for @skinHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'Skin History'**
+  String get skinHistory;
+
+  /// No description provided for @lastScan.
+  ///
+  /// In en, this message translates to:
+  /// **'Last Scan'**
+  String get lastScan;
+
+  /// No description provided for @notTakenYet.
+  ///
+  /// In en, this message translates to:
+  /// **'Not taken yet'**
+  String get notTakenYet;
+
+  /// No description provided for @scanHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan History'**
+  String get scanHistory;
+
+  /// No description provided for @noScanHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'No scan history yet'**
+  String get noScanHistory;
+
+  /// No description provided for @noScanHistorySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your scan results will appear here'**
+  String get noScanHistorySubtitle;
+
+  /// No description provided for @selectLanguage.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Language'**
+  String get selectLanguage;
+
+  /// No description provided for @english.
+  ///
+  /// In en, this message translates to:
+  /// **'English'**
+  String get english;
+
+  /// No description provided for @arabic.
+  ///
+  /// In en, this message translates to:
+  /// **'Arabic'**
+  String get arabic;
+
+  /// No description provided for @paymobPayment.
+  ///
+  /// In en, this message translates to:
+  /// **'Paymob Payment'**
+  String get paymobPayment;
+
+  /// No description provided for @completePayment.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete your payment'**
+  String get completePayment;
+
+  /// No description provided for @paymentBrowserMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'The Paymob secure payment page has been opened in your browser. Return here after completing payment.'**
+  String get paymentBrowserMessage;
+
+  /// No description provided for @openPaymentAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'Open Payment Page Again'**
+  String get openPaymentAgain;
+
+  /// No description provided for @paymentCompleted.
+  ///
+  /// In en, this message translates to:
+  /// **'I Completed Payment'**
+  String get paymentCompleted;
+
+  /// No description provided for @skinTypeResult.
+  ///
+  /// In en, this message translates to:
+  /// **'Skin Type Result'**
+  String get skinTypeResult;
+
+  /// No description provided for @skinMostLikelyPrefix.
+  ///
+  /// In en, this message translates to:
+  /// **'Your skin is most likely'**
+  String get skinMostLikelyPrefix;
 }
 
 class _AppLocalizationsDelegate

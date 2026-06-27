@@ -1,9 +1,10 @@
+import 'package:dermamind_app/l10n/app_localizations.dart';
 import 'package:dermamind_app/models/scan_history_model.dart';
-import 'package:dermamind_app/models/scan_result_model.dart';
-import 'package:dermamind_app/services/api_service.dart';
+import 'package:dermamind_app/providers/scan_history_provider.dart';
 import 'package:dermamind_app/utils/app_color.dart';
 import 'package:dermamind_app/utils/app_style.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'scan_result_screen.dart';
 
 class ScanHistoryScreen extends StatefulWidget {
@@ -16,43 +17,20 @@ class ScanHistoryScreen extends StatefulWidget {
 }
 
 class _ScanHistoryScreenState extends State<ScanHistoryScreen> {
-  List<ScanHistoryItem> _items = [];
-  bool _isLoading = true;
-  String? _error;
-
   @override
   void initState() {
     super.initState();
-    _loadHistory();
-  }
-
-  Future<void> _loadHistory() async {
-    try {
-      final response = await ApiService.getScanHistory();
-      if (response.success && response.data != null) {
-        setState(() {
-          _items = (response.data as List)
-              .map((e) => ScanHistoryItem.fromJson(
-              e as Map<String, dynamic>))
-              .toList();
-          _isLoading = false;
-        });
-      } else {
-        setState(() {
-          _error = response.message ?? 'Failed to load history';
-          _isLoading = false;
-        });
-      }
-    } catch (e) {
-      setState(() {
-        _error = 'Failed to load scan history';
-        _isLoading = false;
-      });
-    }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<ScanHistoryProvider>().loadHistory();
+    });
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final provider = context.watch<ScanHistoryProvider>();
+    final items = provider.items;
+
     return Scaffold(
       backgroundColor: AppColor.primaryColor,
       appBar: AppBar(
@@ -64,85 +42,56 @@ class _ScanHistoryScreenState extends State<ScanHistoryScreen> {
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
-          'Scan History',
+          l10n.scanHistory,
           style: AppStyle.regular
               .copyWith(color: Colors.white, fontSize: 18),
         ),
         centerTitle: true,
       ),
-      body: _isLoading
+      body: provider.isLoading
           ? const Center(
-          child: CircularProgressIndicator(
-              color: AppColor.blueColor))
-          : _error != null
-          ? Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.error_outline,
-                color: Colors.grey.shade400, size: 48),
-            const SizedBox(height: 12),
-            Text(_error!,
-                style: AppStyle.regular
-                    .copyWith(color: Colors.grey)),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: () {
-                setState(() {
-                  _isLoading = true;
-                  _error = null;
-                });
-                _loadHistory();
-              },
-              style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColor.blueColor),
-              child: const Text('Retry',
-                  style: TextStyle(color: Colors.white)),
-            ),
-          ],
-        ),
-      )
-          : _items.isEmpty
-          ? Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.history,
-                color: Colors.grey.shade400, size: 64),
-            const SizedBox(height: 16),
-            Text(
-              'No scan history yet',
-              style: AppStyle.regular.copyWith(
-                color: Colors.grey.shade500,
-                fontSize: 16,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Your scan results will appear here',
-              style: AppStyle.regular.copyWith(
-                color: Colors.grey.shade400,
-                fontSize: 13,
-              ),
-            ),
-          ],
-        ),
-      )
-          : ListView.builder(
-        padding: const EdgeInsets.all(16),
-        itemCount: _items.length,
-        itemBuilder: (context, index) {
-          final item = _items[index];
-          return _ScanHistoryCard(
-            item: item,
-            onTap: () => Navigator.pushNamed(
-              context,
-              ScanResultScreen.routeName,
-              arguments: item.result,
-            ),
-          );
-        },
-      ),
+              child: CircularProgressIndicator(color: AppColor.blueColor))
+          : items.isEmpty
+              ? Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.history,
+                          color: Colors.grey.shade400, size: 64),
+                      const SizedBox(height: 16),
+                      Text(
+                        l10n.noScanHistory,
+                        style: AppStyle.regular.copyWith(
+                          color: Colors.grey.shade500,
+                          fontSize: 16,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        l10n.noScanHistorySubtitle,
+                        style: AppStyle.regular.copyWith(
+                          color: Colors.grey.shade400,
+                          fontSize: 13,
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+              : ListView.builder(
+                  padding: const EdgeInsets.all(16),
+                  itemCount: items.length,
+                  itemBuilder: (context, index) {
+                    final item = items[index];
+                    return _ScanHistoryCard(
+                      item: item,
+                      onTap: () => Navigator.pushNamed(
+                        context,
+                        ScanResultScreen.routeName,
+                        arguments: item.result,
+                      ),
+                    );
+                  },
+                ),
     );
   }
 }
@@ -178,7 +127,6 @@ class _ScanHistoryCard extends StatelessWidget {
           padding: const EdgeInsets.all(16),
           child: Row(
             children: [
-              // Icon
               Container(
                 width: 48,
                 height: 48,
@@ -193,7 +141,6 @@ class _ScanHistoryCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 14),
-              // Content
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -202,8 +149,7 @@ class _ScanHistoryCard extends StatelessWidget {
                       item.diseaseName.isNotEmpty
                           ? item.diseaseName
                           : 'Scan Result',
-                      style: AppStyle.productNameText
-                          .copyWith(fontSize: 15),
+                      style: AppStyle.productNameText.copyWith(fontSize: 15),
                     ),
                     const SizedBox(height: 4),
                     Row(
@@ -223,8 +169,7 @@ class _ScanHistoryCard extends StatelessWidget {
                           padding: const EdgeInsets.symmetric(
                               horizontal: 8, vertical: 2),
                           decoration: BoxDecoration(
-                            color: AppColor.blueColor
-                                .withValues(alpha: 0.1),
+                            color: AppColor.blueColor.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(20),
                           ),
                           child: Text(
@@ -241,9 +186,7 @@ class _ScanHistoryCard extends StatelessWidget {
                   ],
                 ),
               ),
-              // Arrow
-              const Icon(Icons.chevron_right,
-                  color: Colors.grey, size: 20),
+              const Icon(Icons.chevron_right, color: Colors.grey, size: 20),
             ],
           ),
         ),

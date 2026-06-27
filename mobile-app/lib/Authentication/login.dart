@@ -1,5 +1,6 @@
 import 'package:dermamind_app/Authentication/forget_password_screen.dart';
 import 'package:dermamind_app/Authentication/register.dart';
+import 'package:dermamind_app/Authentication/widgets/google_sign_in_button.dart';
 import 'package:dermamind_app/providers/auth_provider.dart';
 import 'package:dermamind_app/utils/app_style.dart';
 import 'package:dermamind_app/utils/assets_Maneger.dart';
@@ -30,17 +31,6 @@ class _LoginScreenState extends State<LoginScreen> {
     _emailCtrl.dispose();
     _passwordCtrl.dispose();
     super.dispose();
-  }
-
-  void _showSocialSnackBar() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Social login coming soon!'),
-        backgroundColor: AppColor.blueColor,
-        behavior: SnackBarBehavior.floating,
-        duration: Duration(seconds: 2),
-      ),
-    );
   }
 
   Future<void> _submit() async {
@@ -284,22 +274,11 @@ class _LoginScreenState extends State<LoginScreen> {
                   ],
                 ),
                 SizedBox(height: height * 0.04),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    GestureDetector(
-                      onTap: () => _showSocialSnackBar(),
-                      child: Image.asset(AssetsManager.googleIcon, height: 40),
-                    ),
-                    GestureDetector(
-                      onTap: () => _showSocialSnackBar(),
-                      child: Image.asset(AssetsManager.facebookIcon, height: 40),
-                    ),
-                    GestureDetector(
-                      onTap: () => _showSocialSnackBar(),
-                      child: Image.asset(AssetsManager.appleIcon, height: 40),
-                    ),
-                  ],
+                GoogleSignInButton(
+                  onSuccess: () => Navigator.pushReplacementNamed(
+                    context,
+                    mainLayout.routeName,
+                  ),
                 ),
               ],
             ),

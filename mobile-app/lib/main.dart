@@ -1,3 +1,4 @@
+import 'package:dermamind_app/product_screen/product_screen.dart';
 import 'package:dermamind_app/services/notification_service.dart';
 import 'package:dermamind_app/Authentication/forget_password_screen.dart';
 import 'package:dermamind_app/Authentication/register.dart';
@@ -13,13 +14,15 @@ import 'package:dermamind_app/providers/cart_provider.dart';
 import 'package:dermamind_app/providers/favorites_provider.dart';
 import 'package:dermamind_app/providers/locale_provider.dart';
 import 'package:dermamind_app/providers/notification_provider.dart';
+import 'package:dermamind_app/providers/scan_history_provider.dart';
 import 'package:dermamind_app/providers/skin_test_provider.dart';
 import 'package:dermamind_app/providers/theme_provider.dart';
 import 'package:dermamind_app/settings/faq_screen.dart';
 import 'package:dermamind_app/settings/settings_screen.dart';
 import 'package:dermamind_app/settings/edit_profile_screen.dart';
 import 'package:dermamind_app/settings/terms_privacy_screen.dart';
-import 'package:dermamind_app/product_screen/product_screen.dart';
+import 'package:dermamind_app/payment/paymob_payment_screen.dart';
+import 'package:dermamind_app/models/checkout_response_model.dart';
 import 'package:dermamind_app/Scan_Screen/scan_followup_screen.dart';
 import 'package:dermamind_app/Scan_Screen/scan_result_screen.dart';
 import 'package:dermamind_app/skin_test/Question_screen.dart';
@@ -33,6 +36,7 @@ import 'Scan_Screen/camera_scan.dart';
 import 'Scan_Screen/scan_face_screen.dart';
 import 'Scan_Screen/scan_history_screen.dart';
 import 'l10n/app_localizations.dart';
+import 'splash/splash_screen.dart';
 
 
 void main() async {
@@ -55,9 +59,12 @@ void main() async {
   await themeProvider.loadFromPrefs();
   final localeProvider = LocaleProvider();
   await localeProvider.loadFromPrefs();
+  final scanHistoryProvider = ScanHistoryProvider();
+  await scanHistoryProvider.loadHistory();
   runApp(MyApp(
     authProvider: authProvider,
     skinTestProvider: skinTestProvider,
+    scanHistoryProvider: scanHistoryProvider,
     notificationProvider: notificationProvider,
     favoritesProvider: favoritesProvider,
     themeProvider: themeProvider,
@@ -68,6 +75,7 @@ void main() async {
 class MyApp extends StatelessWidget {
   final AuthProvider authProvider;
   final SkinTestProvider skinTestProvider;
+  final ScanHistoryProvider scanHistoryProvider;
   final NotificationProvider notificationProvider;
   final FavoritesProvider favoritesProvider;
   final ThemeProvider themeProvider;
@@ -77,6 +85,7 @@ class MyApp extends StatelessWidget {
     super.key,
     required this.authProvider,
     required this.skinTestProvider,
+    required this.scanHistoryProvider,
     required this.notificationProvider,
     required this.favoritesProvider,
     required this.themeProvider,
@@ -89,6 +98,7 @@ class MyApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider<AuthProvider>.value(value: authProvider),
         ChangeNotifierProvider<SkinTestProvider>.value(value: skinTestProvider),
+        ChangeNotifierProvider<ScanHistoryProvider>.value(value: scanHistoryProvider),
         ChangeNotifierProvider<NotificationProvider>.value(value: notificationProvider),
         ChangeNotifierProvider<CartProvider>(create: (_) => CartProvider()),
         ChangeNotifierProvider<FavoritesProvider>.value(value: favoritesProvider),
@@ -99,14 +109,13 @@ class MyApp extends StatelessWidget {
       child: Consumer2<ThemeProvider, LocaleProvider>(
         builder: (context, themeP, localeP, _) => MaterialApp(
           debugShowCheckedModeBanner: false,
-          initialRoute: authProvider.isLoggedIn
-              ? mainLayout.routeName
-              : LoginScreen.RoutName,
+          initialRoute: SplashScreen.routeName,
           theme: AppTheme.lightTheme,
           darkTheme: AppTheme.darkTheme,
           themeMode: themeP.themeMode,
           locale: localeP.locale,
           routes: {
+            SplashScreen.routeName: (context) => const SplashScreen(),
             LoginScreen.RoutName: (context) => LoginScreen(),
             RegisterScreen.RoutName: (context) => RegisterScreen(),
             QuestionScreen.RoutName: (context) => QuestionScreen(),
@@ -124,6 +133,14 @@ class MyApp extends StatelessWidget {
             SettingsScreen.routeName: (context) => const SettingsScreen(),
             EditProfileScreen.routeName: (context) => const EditProfileScreen(),
             CartScreen.routeName: (context) => const CartScreen(),
+            PaymobPaymentScreen.routeName: (context) {
+              final args = ModalRoute.of(context)?.settings.arguments
+                  as CheckoutResponseModel?;
+              return PaymobPaymentScreen(
+                paymentUrl: args?.paymentUrl ?? '',
+                orderId: args?.orderId,
+              );
+            },
             ChatbotScreen.routeName: (context) => const ChatbotScreen(),
             ForgetPasswordScreen.routeName: (context) => const ForgetPasswordScreen(),
             VerifyOtpScreen.routeName: (context) => const VerifyOtpScreen(),

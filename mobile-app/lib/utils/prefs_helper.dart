@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:shared_preferences/shared_preferences.dart';
 
 class PrefsHelper {
@@ -11,6 +13,9 @@ class PrefsHelper {
   static const _keySkinType = 'skin_type';
   static const _keySkinHistory = 'skin_history';
   static const _keyLastScan = 'last_scan';
+  static const _keySkinTypeScores = 'skin_type_scores';
+  static const _keyScanHistory = 'scan_history_json';
+  static const _keyScanHistoryCleared = 'scan_history_cleared_v1';
 
   static const _keyFavorites = 'favorite_ids';
   static const _keyPushNotif = 'push_notifications';
@@ -18,6 +23,7 @@ class PrefsHelper {
   static const _keyToken = 'auth_token';
   static const _keyDarkMode = 'dark_mode';
   static const _keyLocale = 'app_locale';
+  static const _keyLocaleSaved = 'app_locale_saved';
 
   static Future<void> saveLoginData({
     required String name,
@@ -73,19 +79,36 @@ class PrefsHelper {
     required String skinType,
     required String skinHistory,
     required String lastScan,
+    List<Map<String, dynamic>> typeScores = const [],
   }) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_keySkinType, skinType);
     await prefs.setString(_keySkinHistory, skinHistory);
     await prefs.setString(_keyLastScan, lastScan);
+    await prefs.setString(_keySkinTypeScores, jsonEncode(typeScores));
   }
 
-  static Future<Map<String, String>> loadSkinResult() async {
+  static Future<Map<String, dynamic>> loadSkinResult() async {
     final prefs = await SharedPreferences.getInstance();
+    final rawScores = prefs.getString(_keySkinTypeScores);
+    List<Map<String, dynamic>> typeScores = [];
+    if (rawScores != null && rawScores.isNotEmpty) {
+      try {
+        final decoded = jsonDecode(rawScores);
+        if (decoded is List) {
+          typeScores = decoded
+              .whereType<Map>()
+              .map((e) => Map<String, dynamic>.from(e))
+              .toList();
+        }
+      } catch (_) {}
+    }
+
     return {
       'skinType': prefs.getString(_keySkinType) ?? '',
       'skinHistory': prefs.getString(_keySkinHistory) ?? '',
       'lastScan': prefs.getString(_keyLastScan) ?? '',
+      'typeScores': typeScores,
     };
   }
 
@@ -146,10 +169,53 @@ class PrefsHelper {
   static Future<void> saveLocale(String languageCode) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_keyLocale, languageCode);
+    await prefs.setBool(_keyLocaleSaved, true);
+  }
+
+  static Future<String?> loadLocaleOrNull() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (!(prefs.getBool(_keyLocaleSaved) ?? false)) return null;
+    return prefs.getString(_keyLocale);
   }
 
   static Future<String> loadLocale() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString(_keyLocale) ?? 'en';
+  }
+
+  static Future<bool> isScanHistoryCleared() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(_keyScanHistoryCleared) ?? false;
+  }
+
+  static Future<void> markScanHistoryCleared() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_keyScanHistoryCleared, true);
+  }
+
+  static Future<void> saveScanHistory(List<Map<String, dynamic>> items) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_keyScanHistory, jsonEncode(items));
+  }
+
+  static Future<List<Map<String, dynamic>>> loadScanHistory() async {
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getString(_keyScanHistory);
+    if (raw == null || raw.isEmpty) return [];
+    try {
+      final decoded = jsonDecode(raw);
+      if (decoded is! List) return [];
+      return decoded
+          .whereType<Map>()
+          .map((e) => Map<String, dynamic>.from(e))
+          .toList();
+    } catch (_) {
+      return [];
+    }
+  }
+
+  static Future<void> clearScanHistory() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_keyScanHistory);
   }
 }

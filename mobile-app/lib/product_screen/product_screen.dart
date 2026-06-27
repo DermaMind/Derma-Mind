@@ -7,10 +7,13 @@ import 'package:dermamind_app/providers/cart_provider.dart';
 import 'package:dermamind_app/providers/favorites_provider.dart';
 import 'package:dermamind_app/providers/skin_test_provider.dart';
 import 'package:dermamind_app/services/api_service.dart';
-import 'package:dermamind_app/utils/app_color.dart';
+import 'package:dermamind_app/l10n/app_localizations.dart';
+import 'package:dermamind_app/utils/product_image.dart';
 import 'package:dermamind_app/utils/app_style.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
+import '../utils/app_color.dart';
 
 class ProductsScreen extends StatefulWidget {
   static const String routeName = 'productsScreen';
@@ -134,6 +137,7 @@ class _ProductsScreenState extends State<ProductsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final filtered = _filtered;
 
     return Scaffold(
@@ -147,7 +151,7 @@ class _ProductsScreenState extends State<ProductsScreen> {
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
-          'Products',
+          l10n.products,
           style: AppStyle.semi40linear
               .copyWith(color: Colors.white, fontSize: 18),
         ),
@@ -306,6 +310,7 @@ class _ProductsScreenState extends State<ProductsScreen> {
                                   brand: product.brand,
                                   price: product.price,
                                   category: product.category,
+                                  imageUrl: product.imageUrl,
                                 ),
                               ),
                           onTap: () => Navigator.push(
@@ -488,29 +493,13 @@ class _ProductCard extends StatelessWidget {
                 ClipRRect(
                   borderRadius:
                       const BorderRadius.vertical(top: Radius.circular(16)),
-                  child: SizedBox(
+                  child: ProductImage(
+                    imageUrl: product.imageUrl,
                     height: 130,
                     width: double.infinity,
-                    child: product.imageUrl != null &&
-                            product.imageUrl!.isNotEmpty
-                        ? Image.network(
-                            product.imageUrl!,
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stack) => Container(
-                              color: product.cardColor,
-                              child: Center(
-                                child: Icon(product.icon,
-                                    color: product.iconColor, size: 42),
-                              ),
-                            ),
-                          )
-                        : Container(
-                            color: product.cardColor,
-                            child: Center(
-                              child: Icon(product.icon,
-                                  color: product.iconColor, size: 42),
-                            ),
-                          ),
+                    fallbackColor: product.cardColor,
+                    fallbackIcon: product.icon,
+                    fallbackIconColor: product.iconColor,
                   ),
                 ),
                 // Favourite button

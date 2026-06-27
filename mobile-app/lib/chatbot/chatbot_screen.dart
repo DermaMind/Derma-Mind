@@ -33,6 +33,8 @@ class _ChatbotScreenState extends State<ChatbotScreen>
 
   bool _isTyping = false;
   bool _isListening = false;
+  bool _contextInitialized = false;
+  bool _diagnosisContextSent = false;
   List<Map<String, dynamic>> _chatHistory = [];
   String? _diagnosisContext;
 
@@ -64,12 +66,57 @@ class _ChatbotScreenState extends State<ChatbotScreen>
       duration: const Duration(milliseconds: 900),
     )..repeat();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
+      if (!mounted || _contextInitialized) return;
+      _contextInitialized = true;
+
+      final routeArgs = ModalRoute.of(context)?.settings.arguments;
+      if (routeArgs is String && routeArgs.isNotEmpty) {
+        _diagnosisContext = routeArgs;
+        _initChatWithDiagnosis();
+        return;
+      }
+
       final skinType = context.read<SkinTestProvider>().skinType;
       if (skinType != 'Unknown') {
         _diagnosisContext = 'User skin type: $skinType';
       }
     });
+  }
+
+  Future<void> _initChatWithDiagnosis() async {
+    setState(() => _isTyping = true);
+
+    try {
+      final response = await ApiService.sendChatMessage(
+        message: null,
+        history: [],
+        diagnosisContext: _diagnosisContext,
+      );
+
+      final reply = response.success && response.data != null
+          ? response.data!.reply
+          : 'I reviewed your scan results. How can I help you today?';
+
+      _chatHistory.add({'role': 'assistant', 'content': reply});
+      _diagnosisContextSent = true;
+
+      if (!mounted) return;
+      setState(() {
+        _isTyping = false;
+        _messages[0] = _ChatMessage(text: reply, isUser: false, time: _now());
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _isTyping = false;
+        _messages[0] = _ChatMessage(
+          text: 'I reviewed your scan results. How can I help you today?',
+          isUser: false,
+          time: _now(),
+        );
+      });
+    }
+    _scrollToBottom();
   }
 
   @override
@@ -104,7 +151,7 @@ class _ChatbotScreenState extends State<ChatbotScreen>
       final response = await ApiService.sendChatMessage(
         message: text,
         history: _chatHistory,
-        diagnosisContext: _diagnosisContext,
+        diagnosisContext: _diagnosisContextSent ? null : _diagnosisContext,
       );
 
       final reply = response.success && response.data != null
@@ -112,6 +159,7 @@ class _ChatbotScreenState extends State<ChatbotScreen>
           : _getResponse(text);
 
       _chatHistory.add({'role': 'assistant', 'content': reply});
+      _diagnosisContextSent = true;
 
       if (!mounted) return;
       setState(() {

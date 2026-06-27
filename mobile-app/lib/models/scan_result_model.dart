@@ -1,5 +1,7 @@
 class ScanResultModel {
   final String disease;
+  final String diseaseEn;
+  final String diseaseAr;
   final double confidence;
   final String severity;
   final String description;
@@ -10,6 +12,8 @@ class ScanResultModel {
 
   const ScanResultModel({
     required this.disease,
+    this.diseaseEn = '',
+    this.diseaseAr = '',
     required this.confidence,
     required this.severity,
     required this.description,
@@ -18,6 +22,31 @@ class ScanResultModel {
     this.disclaimer,
     this.mode,
   });
+
+  /// Context string for the chatbot API, e.g.
+  /// "Acne - حب الشباب - confidence: 87%"
+  String get diagnosisContext {
+    final en = diseaseEn.isNotEmpty ? diseaseEn : disease;
+    final ar = diseaseAr.isNotEmpty ? diseaseAr : '';
+
+    String confidencePart;
+    if (!isConfidenceLevel && confidence > 0) {
+      final pct = confidence <= 1.0 ? confidence * 100 : confidence;
+      confidencePart = '${pct.toStringAsFixed(0)}%';
+    } else if (severity.isNotEmpty) {
+      confidencePart = severity;
+    } else {
+      return '';
+    }
+
+    if (ar.isNotEmpty && en.isNotEmpty && ar != en) {
+      return '$en - $ar - confidence: $confidencePart';
+    }
+    if (en.isNotEmpty) {
+      return '$en - confidence: $confidencePart';
+    }
+    return '';
+  }
 
   bool get isConfidenceLevel =>
       severity == 'عالية' ||
@@ -63,6 +92,8 @@ class ScanResultModel {
 
         return ScanResultModel(
           disease: disease,
+          diseaseEn: nameEn,
+          diseaseAr: nameAr,
           confidence: _toDouble(first['confidence']),
           severity: first['likelihood']?.toString() ?? '',
           description: first['personalized_insight']?.toString() ?? '',
@@ -91,9 +122,12 @@ class ScanResultModel {
   factory ScanResultModel.fromDiagnoseComplete(Map<String, dynamic> json) {
     final nameLocalized = json['name_localized']?.toString() ?? '';
     final diseaseEn = json['disease']?.toString() ?? '';
+    final diseaseAr = json['name_ar']?.toString() ?? '';
 
     return ScanResultModel(
       disease: nameLocalized.isNotEmpty ? nameLocalized : diseaseEn,
+      diseaseEn: diseaseEn,
+      diseaseAr: diseaseAr,
       confidence: 0,
       severity: json['confidence_level']?.toString() ?? '',
       description: json['personalized_insight']?.toString() ?? '',
@@ -111,6 +145,37 @@ class ScanResultModel {
       recommendations: [],
     );
   }
+
+  Map<String, dynamic> toJson() => {
+        'disease': disease,
+        'diseaseEn': diseaseEn,
+        'diseaseAr': diseaseAr,
+        'confidence': confidence,
+        'severity': severity,
+        'description': description,
+        'recommendations': recommendations,
+        if (imageUrl != null) 'imageUrl': imageUrl,
+        if (disclaimer != null) 'disclaimer': disclaimer,
+        if (mode != null) 'mode': mode,
+      };
+
+  factory ScanResultModel.fromStoredJson(Map<String, dynamic> json) {
+    return ScanResultModel(
+      disease: json['disease']?.toString() ?? '',
+      diseaseEn: json['diseaseEn']?.toString() ?? '',
+      diseaseAr: json['diseaseAr']?.toString() ?? '',
+      confidence: _toDouble(json['confidence']),
+      severity: json['severity']?.toString() ?? '',
+      description: json['description']?.toString() ?? '',
+      recommendations: _parseRecommendations(json['recommendations']),
+      imageUrl: json['imageUrl']?.toString(),
+      disclaimer: json['disclaimer']?.toString(),
+      mode: json['mode']?.toString(),
+    );
+  }
+
+  bool get hasDiagnosis =>
+      disease.isNotEmpty || diseaseEn.isNotEmpty || diseaseAr.isNotEmpty;
 
   static List<String> _parseRecommendations(dynamic rawRec) {
     if (rawRec is List) {

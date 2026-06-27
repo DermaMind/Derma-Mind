@@ -7,6 +7,7 @@ import '../models/api_response.dart';
 import '../models/auth_response_model.dart';
 import '../models/cart_item_model.dart';
 import '../models/chatbot_response_model.dart';
+import '../models/checkout_response_model.dart';
 import '../models/map_place_model.dart';
 import '../models/product_model_api.dart';
 import '../models/scan_analyze_model.dart';
@@ -18,7 +19,7 @@ import 'package:http_parser/http_parser.dart';
 
 class ApiService {
   static const String baseUrl =
-      'https://dermamind-api-production-3393.up.railway.app';
+      'https://dermamind-api-production-a383.up.railway.app';
 
   static String? _token;
 
@@ -324,7 +325,7 @@ class ApiService {
   // ── CHATBOT ────────────────────────────────────────────────────────────────
 
   static Future<ApiResponse<ChatbotResponseModel>> sendChatMessage({
-    required String message,
+    String? message,
     List<dynamic>? history,
     String? diagnosisContext,
   }) async {
@@ -507,13 +508,16 @@ class ApiService {
     }
   }
 
-  static Future<ApiResponse<bool>> checkout() async {
+  static Future<ApiResponse<CheckoutResponseModel>> checkout() async {
     try {
       final response = await http.post(
         Uri.parse('$baseUrl/api/Cart/checkout'),
         headers: _authHeaders,
       );
-      return _handleResponse(response, (_) => true);
+      return _handleResponse(
+        response,
+        (json) => CheckoutResponseModel.fromJson(json),
+      );
     } catch (e) {
       return ApiResponse.error(_exceptionMessage(e));
     }

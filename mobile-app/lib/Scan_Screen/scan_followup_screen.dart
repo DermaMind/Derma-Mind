@@ -1,6 +1,7 @@
 import 'package:dermamind_app/Scan_Screen/scan_result_screen.dart';
 import 'package:dermamind_app/models/diagnose_answer_model.dart';
 import 'package:dermamind_app/models/scan_analyze_model.dart';
+import 'package:dermamind_app/providers/scan_history_provider.dart';
 import 'package:dermamind_app/providers/skin_test_provider.dart';
 import 'package:dermamind_app/services/api_service.dart';
 import 'package:dermamind_app/utils/app_color.dart';
@@ -146,6 +147,9 @@ class _ScanFollowupScreenState extends State<ScanFollowupScreen> {
         });
         return;
       }
+
+      await context.read<ScanHistoryProvider>().addScan(response.data!);
+      await context.read<SkinTestProvider>().recordScanCompleted();
 
       Navigator.pushReplacementNamed(
         context,

@@ -5,12 +5,13 @@ import 'package:dermamind_app/product_screen/product_screen.dart';
 import 'package:dermamind_app/providers/cart_provider.dart';
 import 'package:dermamind_app/providers/favorites_provider.dart';
 import 'package:dermamind_app/services/api_service.dart';
-import 'package:dermamind_app/utils/app_color.dart';
+import 'package:dermamind_app/utils/product_image.dart';
 import 'package:dermamind_app/utils/app_style.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../l10n/app_localizations.dart';
+import '../../utils/app_color.dart';
 import 'SlidePageRoute.dart';
 
 // ── Section widget ─────────────────────────────────────────────────────────────
@@ -108,6 +109,7 @@ class _popularProductState extends State<popularProduct> {
                         brand: product.brand,
                         price: product.price,
                         category: product.category,
+                        imageUrl: product.imageUrl,
                       ),
                     ),
                 onTap: () => Navigator.push(
@@ -168,29 +170,14 @@ class _HomeProductCard extends StatelessWidget {
                 ClipRRect(
                   borderRadius:
                       const BorderRadius.vertical(top: Radius.circular(16)),
-                  child: SizedBox(
+                  child: ProductImage(
+                    imageUrl: product.imageUrl,
                     height: 105,
                     width: double.infinity,
-                    child: product.imageUrl != null &&
-                            product.imageUrl!.isNotEmpty
-                        ? Image.network(
-                            product.imageUrl!,
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stack) => Container(
-                              color: product.cardColor,
-                              child: Center(
-                                child: Icon(product.icon,
-                                    color: product.iconColor, size: 44),
-                              ),
-                            ),
-                          )
-                        : Container(
-                            color: product.cardColor,
-                            child: Center(
-                              child: Icon(product.icon,
-                                  color: product.iconColor, size: 44),
-                            ),
-                          ),
+                    fallbackColor: product.cardColor,
+                    fallbackIcon: product.icon,
+                    fallbackIconColor: product.iconColor,
+                    fallbackIconSize: 44,
                   ),
                 ),
                 // Favourite heart — top right

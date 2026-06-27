@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../models/cart_item_model.dart';
 import '../services/api_service.dart';
+import '../utils/product_image.dart';
 
 class CartItem {
   final String id;
@@ -89,7 +89,7 @@ class CartProvider extends ChangeNotifier {
             name: item.name,
             brand: item.brand,
             price: item.price,
-            imageUrl: item.imageUrl,
+            imageUrl: ProductImage.resolveUrl(item.imageUrl),
             category: 'Product',
             quantity: item.quantity,
           ));

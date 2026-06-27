@@ -25,7 +25,12 @@ class ProductModelApi {
       description: json['description'] ?? '',
       price: _toDouble(json['price']),
       category: json['category'] ?? '',
-      imageUrl: json['imageUrl'] ?? json['image_url'] ?? json['image'],
+      imageUrl: json['imageUrl'] ??
+          json['image_url'] ??
+          json['image'] ??
+          json['ImageUrl'] ??
+          json['productImage'] ??
+          json['ProductImage'],
     );
   }
 

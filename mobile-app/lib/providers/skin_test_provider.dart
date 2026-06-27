@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import '../models/skin_test_question_model.dart';
+import '../models/skin_test_result_model.dart';
 import '../services/api_service.dart';
 import '../utils/prefs_helper.dart';
 
@@ -10,6 +11,7 @@ class SkinTestProvider extends ChangeNotifier {
   String _skinType = 'Unknown';
   String _skinHistory = 'No history';
   String _lastScan = 'Never';
+  List<SkinTypeScore> _typeScores = [];
 
   int _currentQuestion = 0;
 
@@ -30,6 +32,16 @@ class SkinTestProvider extends ChangeNotifier {
 
   String get lastScan => _lastScan;
 
+  List<SkinTypeScore> get typeScores => List.unmodifiable(_typeScores);
+
+  List<SkinTypeScore> get displayTypeScores {
+    if (_typeScores.isNotEmpty) return _typeScores;
+    if (_skinType.isEmpty || _skinType.toLowerCase() == 'unknown') {
+      return const [];
+    }
+    return [SkinTypeScore(label: _skinType, percent: 100)];
+  }
+
   int get currentQuestion => _currentQuestion;
 
   int get totalQuestions => _apiQuestions.length;
@@ -40,7 +52,13 @@ class SkinTestProvider extends ChangeNotifier {
   bool get isCompleted =>
       totalQuestions > 0 && _answers.length == totalQuestions;
 
-  bool get hasSkinResult => _skinType != 'Unknown';
+  bool get hasSkinResult {
+    final hasType =
+        _skinType.isNotEmpty && _skinType.toLowerCase() != 'unknown';
+    final hasDescription = _skinHistory.isNotEmpty &&
+        _skinHistory.toLowerCase() != 'no history';
+    return hasType || hasDescription;
+  }
 
   List<SkinTestQuestionModel> get apiQuestions =>
       List.unmodifiable(_apiQuestions);
@@ -57,8 +75,8 @@ class SkinTestProvider extends ChangeNotifier {
         value.toLowerCase() != 'unknown';
   }
 
-  Future<void> loadQuestionsFromApi({String? lang}) async {
-    if (_questionsLoaded) return;
+  Future<void> loadQuestionsFromApi({String? lang, bool force = false}) async {
+    if (_questionsLoaded && !force) return;
     final language = lang ?? _lang;
     try {
       final response = await ApiService.getSkinTestQuestions(lang: language);
@@ -78,39 +96,64 @@ class SkinTestProvider extends ChangeNotifier {
     final data = await PrefsHelper.loadSkinResult();
 
     if (data['skinType'] != null &&
-        data['skinType']!.isNotEmpty) {
-      _skinType = data['skinType']!;
+        (data['skinType'] as String).isNotEmpty) {
+      _skinType = data['skinType'] as String;
     }
 
     if (data['skinHistory'] != null &&
-        data['skinHistory']!.isNotEmpty) {
-      _skinHistory = data['skinHistory']!;
+        (data['skinHistory'] as String).isNotEmpty) {
+      _skinHistory = data['skinHistory'] as String;
     }
 
     if (data['lastScan'] != null &&
-        data['lastScan']!.isNotEmpty) {
-      _lastScan = data['lastScan']!;
+        (data['lastScan'] as String).isNotEmpty) {
+      _lastScan = data['lastScan'] as String;
+    }
+
+    final savedScores = data['typeScores'];
+    if (savedScores is List) {
+      _typeScores = savedScores
+          .whereType<Map>()
+          .map((e) => SkinTypeScore.fromJson(Map<String, dynamic>.from(e)))
+          .toList();
     }
 
     try {
-      final result =
-      await ApiService.getSkinTestResult(lang: 'en');
+      final savedLang = await PrefsHelper.loadLocale();
+      final result = await ApiService.getSkinTestResult(lang: savedLang);
 
       if (result.success && result.data != null) {
-        if (_isValidSkinTypeString(result.data!.skinType)) {
-          _skinType = result.data!.skinType;
-        }
-
-        if (result.data!.description != null &&
-            result.data!.description!.isNotEmpty) {
-          _skinHistory = result.data!.description!;
-        }
+        _applyResultModel(result.data!);
       }
     } catch (e) {
       debugPrint(e.toString());
     }
 
     notifyListeners();
+  }
+
+  void _applyResultModel(SkinTestResultModel model) {
+    if (model.skinType.isNotEmpty &&
+        model.skinType.toLowerCase() != 'unknown') {
+      _skinType = model.skinType;
+    }
+
+    if (model.description != null && model.description!.isNotEmpty) {
+      _skinHistory = model.description!;
+    }
+
+    if (model.typeScores.isNotEmpty) {
+      _typeScores = model.typeScores;
+    }
+  }
+
+  Future<void> _persistSkinResult() async {
+    await PrefsHelper.saveSkinResult(
+      skinType: _skinType == 'Unknown' ? '' : _skinType,
+      skinHistory: _skinHistory == 'No history' ? '' : _skinHistory,
+      lastScan: _lastScan == 'Never' ? '' : _lastScan,
+      typeScores: _typeScores.map((s) => s.toJson()).toList(),
+    );
   }
 
   void answerQuestion(
@@ -136,9 +179,9 @@ class SkinTestProvider extends ChangeNotifier {
 
   void resetTest() {
     _currentQuestion = 0;
-
     _answers.clear();
-
+    _questionsLoaded = false;
+    _apiQuestions = [];
     notifyListeners();
   }
 
@@ -149,6 +192,8 @@ class SkinTestProvider extends ChangeNotifier {
 
     _lastScan = 'Never';
 
+    _typeScores = [];
+
     _currentQuestion = 0;
 
     _answers.clear();
@@ -157,8 +202,15 @@ class SkinTestProvider extends ChangeNotifier {
       skinType: '',
       skinHistory: '',
       lastScan: '',
+      typeScores: const [],
     );
 
+    notifyListeners();
+  }
+
+  Future<void> recordScanCompleted() async {
+    _lastScan = DateFormat('MMMM dd, yyyy').format(DateTime.now());
+    await _persistSkinResult();
     notifyListeners();
   }
 
@@ -178,15 +230,15 @@ class SkinTestProvider extends ChangeNotifier {
         debugPrint("Submit Skin Test Failed");
         return;
       }
+      if (response.data != null) {
+        _applyResultModel(response.data!);
+      }
       final result = await ApiService.getSkinTestResult(lang: _lang);
       if (result.success && result.data != null) {
-        _skinType = result.data!.skinType;
-        _skinHistory = result.data!.description ?? '';
-        await PrefsHelper.saveSkinResult(
-          skinType: _skinType,
-          skinHistory: _skinHistory,
-          lastScan: _lastScan,
-        );
+        _applyResultModel(result.data!);
+      }
+      if (hasSkinResult) {
+        await _persistSkinResult();
         notifyListeners();
       }
     } catch (e) {

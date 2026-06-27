@@ -65,7 +65,7 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
             const SizedBox(height: 14),
             _buildDisclaimer(result),
             const SizedBox(height: 24),
-            _buildActionButtons(),
+            _buildActionButtons(result),
           ],
         ),
       ),
@@ -481,15 +481,21 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
 
   // ── Action buttons ────────────────────────────────────────────────────────
 
-  Widget _buildActionButtons() {
+  Widget _buildActionButtons(ScanResultModel result) {
     return Column(
       children: [
         _ActionButton(
           label: 'Chat with Smart Assistant',
           icon: Icons.smart_toy_outlined,
           color: AppColor.blueColor,
-          onTap: () =>
-              Navigator.pushNamed(context, ChatbotScreen.routeName),
+          onTap: () {
+            final contextStr = result.diagnosisContext;
+            Navigator.pushNamed(
+              context,
+              ChatbotScreen.routeName,
+              arguments: contextStr.isNotEmpty ? contextStr : null,
+            );
+          },
         ),
         const SizedBox(height: 12),
         _ActionButton(

@@ -1,4 +1,7 @@
+import 'package:dermamind_app/l10n/app_localizations.dart';
+import 'package:dermamind_app/payment/paymob_payment_screen.dart';
 import 'package:dermamind_app/providers/cart_provider.dart';
+import 'package:dermamind_app/utils/product_image.dart';
 import 'package:dermamind_app/services/api_service.dart';
 import 'package:dermamind_app/utils/app_color.dart';
 import 'package:dermamind_app/utils/app_style.dart';
@@ -25,6 +28,7 @@ class _CartScreenState extends State<CartScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: AppColor.primaryColor,
       appBar: AppBar(
@@ -36,7 +40,7 @@ class _CartScreenState extends State<CartScreen> {
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
-          'My Cart',
+          l10n.myCart,
           style: AppStyle.semi40linear.copyWith(color: Colors.white, fontSize: 18),
         ),
         centerTitle: true,
@@ -49,28 +53,27 @@ class _CartScreenState extends State<CartScreen> {
                       showDialog(
                         context: context,
                         builder: (_) => AlertDialog(
-                          title: const Text('Clear Cart'),
-                          content: const Text(
-                              'Remove all items from your cart?'),
+                          title: Text(l10n.clearCart),
+                          content: Text(l10n.clearCartConfirm),
                           actions: [
                             TextButton(
                               onPressed: () => Navigator.pop(context),
-                              child: const Text('Cancel'),
+                              child: Text(l10n.cancel),
                             ),
                             TextButton(
                               onPressed: () {
                                 cart.clear();
                                 Navigator.pop(context);
                               },
-                              child: const Text('Clear',
-                                  style: TextStyle(color: Colors.red)),
+                              child: Text(l10n.clear,
+                                  style: const TextStyle(color: Colors.red)),
                             ),
                           ],
                         ),
                       );
                     },
-                    child: const Text(
-                      'Clear',
+                    child: Text(
+                      l10n.clear,
                       style: TextStyle(
                           color: Colors.white70,
                           fontSize: 13,
@@ -83,11 +86,10 @@ class _CartScreenState extends State<CartScreen> {
       body: Consumer<CartProvider>(
         builder: (context, cart, _) {
           if (cart.items.isEmpty) {
-            return _buildEmptyState(context);
+            return _buildEmptyState(context, l10n);
           }
           return Column(
             children: [
-              // ── Items list ──────────────────────────────────────────────
               Expanded(
                 child: ListView.separated(
                   padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
@@ -99,8 +101,6 @@ class _CartScreenState extends State<CartScreen> {
                   },
                 ),
               ),
-
-              // ── Order summary ───────────────────────────────────────────
               _OrderSummary(cart: cart),
             ],
           );
@@ -109,7 +109,7 @@ class _CartScreenState extends State<CartScreen> {
     );
   }
 
-  Widget _buildEmptyState(BuildContext context) {
+  Widget _buildEmptyState(BuildContext context, AppLocalizations l10n) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -125,11 +125,11 @@ class _CartScreenState extends State<CartScreen> {
                 size: 52, color: AppColor.blueColor),
           ),
           const SizedBox(height: 20),
-          Text('Your cart is empty',
+          Text(l10n.emptyCart,
               style: AppStyle.semi40linear.copyWith(fontSize: 18)),
           const SizedBox(height: 8),
           Text(
-            'Add products to get started',
+            l10n.emptyCartSubtitle,
             style: AppStyle.regular.copyWith(color: AppColor.grayColor),
           ),
           const SizedBox(height: 28),
@@ -145,7 +145,7 @@ class _CartScreenState extends State<CartScreen> {
               elevation: 0,
             ),
             child: Text(
-              'Browse Products',
+              l10n.browseProducts,
               style: AppStyle.regular.copyWith(
                   color: Colors.white, fontWeight: FontWeight.w700),
             ),
@@ -204,18 +204,12 @@ class _CartItemCard extends StatelessWidget {
                 color: Colors.grey.shade100,
               ),
               clipBehavior: Clip.antiAlias,
-              child: item.imageUrl != null && item.imageUrl!.isNotEmpty
-                  ? Image.network(
-                item.imageUrl!,
-                fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => Icon(
-                  Icons.image_not_supported,
-                  color: AppColor.blueColor,
-                ),
-              )
-                  : Icon(
-                Icons.image_not_supported,
-                color: AppColor.blueColor,
+              child: ProductImage(
+                imageUrl: item.imageUrl,
+                width: 56,
+                height: 56,
+                borderRadius: BorderRadius.circular(12),
+                fallbackIconSize: 24,
               ),
             ),
             const SizedBox(width: 12),
@@ -327,45 +321,10 @@ class _OrderSummaryState extends State<_OrderSummary> {
   Future<void> _checkout() async {
     setState(() => _isCheckingOut = true);
     try {
-      final res = await ApiService.checkout();
+      final completed = await CheckoutHelper.proceedToPaymob(context);
       if (!mounted) return;
-      if (res.success) {
+      if (completed) {
         widget.cart.clear();
-        showDialog(
-          context: context,
-          barrierDismissible: false,
-          builder: (_) => AlertDialog(
-            title: const Text('Order Placed!'),
-            content: const Text('Your order has been placed successfully.'),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                  Navigator.pop(context);
-                },
-                child: const Text('OK'),
-              ),
-            ],
-          ),
-        );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(res.message ?? 'Checkout failed. Please try again.'),
-            backgroundColor: Colors.red,
-            duration: const Duration(seconds: 3),
-          ),
-        );
-      }
-    } catch (_) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Checkout failed. Please try again.'),
-            backgroundColor: Colors.red,
-            duration: Duration(seconds: 3),
-          ),
-        );
       }
     } finally {
       if (mounted) setState(() => _isCheckingOut = false);
@@ -374,6 +333,7 @@ class _OrderSummaryState extends State<_OrderSummary> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final subtotal = widget.cart.totalPrice;
     const discount = 0.0;
     final total = subtotal - discount;
@@ -412,7 +372,7 @@ class _OrderSummaryState extends State<_OrderSummary> {
                     controller: _promoCtrl,
                     style: AppStyle.regular.copyWith(fontSize: 13),
                     decoration: InputDecoration(
-                      hintText: 'Enter promo code',
+                      hintText: l10n.promoCodeHint,
                       hintStyle: AppStyle.regular.copyWith(
                           color: AppColor.grayColor, fontSize: 13),
                       prefixIcon: Icon(Icons.local_offer_outlined,
@@ -428,9 +388,9 @@ class _OrderSummaryState extends State<_OrderSummary> {
               ElevatedButton(
                 onPressed: () {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Promo code not valid'),
-                      duration: Duration(seconds: 2),
+                    SnackBar(
+                      content: Text(l10n.promoInvalid),
+                      duration: const Duration(seconds: 2),
                     ),
                   );
                 },
@@ -444,7 +404,7 @@ class _OrderSummaryState extends State<_OrderSummary> {
                   elevation: 0,
                 ),
                 child: Text(
-                  'Apply',
+                  l10n.apply,
                   style: AppStyle.regular.copyWith(
                       color: Colors.white, fontWeight: FontWeight.w700),
                 ),
@@ -457,15 +417,15 @@ class _OrderSummaryState extends State<_OrderSummary> {
           const SizedBox(height: 14),
 
           // ── Summary rows ──────────────────────────────────────────────
-          Text('Order Summary',
+          Text(l10n.orderSummary,
               style: AppStyle.productDetailsText.copyWith(fontSize: 15)),
           const SizedBox(height: 12),
-          _summaryRow('Subtotal (${widget.cart.itemCount} items)',
+          _summaryRow(l10n.subtotal(widget.cart.itemCount),
               '${subtotal.toInt()} EGP'),
           const SizedBox(height: 6),
-          _summaryRow('Discount', discount == 0 ? '-' : '-${discount.toInt()} EGP'),
+          _summaryRow(l10n.discount, discount == 0 ? '-' : '-${discount.toInt()} EGP'),
           const SizedBox(height: 6),
-          _summaryRow('Delivery', 'Free',
+          _summaryRow(l10n.delivery, l10n.free,
               valueColor: const Color(0xFF10B981)),
           const SizedBox(height: 10),
           Divider(color: Colors.grey.shade200, height: 1),
@@ -473,7 +433,7 @@ class _OrderSummaryState extends State<_OrderSummary> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('Total',
+              Text(l10n.total,
                   style: AppStyle.productDetailsText
                       .copyWith(fontSize: 16)),
               Text(
@@ -504,8 +464,8 @@ class _OrderSummaryState extends State<_OrderSummary> {
                       color: Colors.white, size: 20),
               label: Text(
                 _isCheckingOut
-                    ? 'Placing Order...'
-                    : 'Proceed to Checkout  ·  ${total.toInt()} EGP',
+                    ? l10n.placingOrder
+                    : '${l10n.proceedToCheckout}  ·  ${total.toInt()} EGP',
                 style: AppStyle.regular.copyWith(
                   color: Colors.white,
                   fontWeight: FontWeight.w700,

@@ -1,10 +1,13 @@
 import 'package:dermamind_app/cart/cart_screen.dart';
+import 'package:dermamind_app/l10n/app_localizations.dart';
+import 'package:dermamind_app/payment/paymob_payment_screen.dart';
 import 'package:dermamind_app/product_screen/product_model.dart';
 import 'package:dermamind_app/providers/cart_provider.dart';
 import 'package:dermamind_app/providers/favorites_provider.dart';
 import 'package:dermamind_app/services/api_service.dart';
 import 'package:dermamind_app/utils/app_color.dart';
 import 'package:dermamind_app/utils/app_style.dart';
+import 'package:dermamind_app/utils/product_image.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -23,11 +26,13 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
   int _quantity = 1;
   bool _showIngredients = true;
   bool _showSuitableFor = true;
+  bool _isCheckingOut = false;
 
   ProductModel get p => widget.product;
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final favs = context.watch<FavoritesProvider>();
     final isFav = favs.isFavorite(p.id);
     return Scaffold(
@@ -96,11 +101,15 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
               ),
             ],
             flexibleSpace: FlexibleSpaceBar(
-              background: Container(
-                color: p.cardColor,
-                child: Center(
-                  child: Icon(p.icon, color: p.iconColor, size: 100),
-                ),
+              background: ProductImage(
+                imageUrl: p.imageUrl,
+                width: double.infinity,
+                height: 260,
+                fit: BoxFit.cover,
+                fallbackColor: p.cardColor,
+                fallbackIcon: p.icon,
+                fallbackIconColor: p.iconColor,
+                fallbackIconSize: 100,
               ),
             ),
           ),
@@ -162,7 +171,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                       }),
                       const SizedBox(width: 6),
                       Text(
-                        '${p.rating}  (${p.reviews} reviews)',
+                        '${p.rating}  (${p.reviews} ${l10n.reviews})',
                         style: AppStyle.regular.copyWith(
                           color: AppColor.grayColor,
                           fontSize: 13,
@@ -225,7 +234,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
 
                   // ── Description ─────────────────────────────────────────
                   const SizedBox(height: 16),
-                  Text('Description',
+                  Text(l10n.description,
                       style: AppStyle.productDetailsText
                           .copyWith(fontSize: 17)),
                   const SizedBox(height: 8),
@@ -244,7 +253,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                   // ── Suitable for ─────────────────────────────────────────
                   const SizedBox(height: 16),
                   _sectionHeader(
-                    label: 'Suitable for skin types',
+                    label: l10n.suitableForSkinTypes,
                     expanded: _showSuitableFor,
                     onTap: () =>
                         setState(() => _showSuitableFor = !_showSuitableFor),
@@ -266,7 +275,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                   // ── Key ingredients ──────────────────────────────────────
                   const SizedBox(height: 16),
                   _sectionHeader(
-                    label: 'Key Ingredients',
+                    label: l10n.keyIngredients,
                     expanded: _showIngredients,
                     onTap: () =>
                         setState(() => _showIngredients = !_showIngredients),
@@ -289,66 +298,71 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
         color: Colors.white,
         padding: EdgeInsets.fromLTRB(
             20, 12, 20, 12 + MediaQuery.of(context).padding.bottom),
-        child: Row(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            // Wishlist icon
-            GestureDetector(
-              onTap: () => context.read<FavoritesProvider>().toggle(p.id),
-              child: Container(
-                width: 50,
-                height: 50,
-                decoration: BoxDecoration(
-                  border: Border.all(color: Colors.grey.shade300),
-                  borderRadius: BorderRadius.circular(14),
+            Row(
+              children: [
+                GestureDetector(
+                  onTap: () => context.read<FavoritesProvider>().toggle(p.id),
+                  child: Container(
+                    width: 50,
+                    height: 50,
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.grey.shade300),
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: Icon(
+                      isFav
+                          ? Icons.favorite_rounded
+                          : Icons.favorite_border_rounded,
+                      color: isFav ? Colors.red : Colors.grey.shade400,
+                    ),
+                  ),
                 ),
-                child: Icon(
-                  isFav
-                      ? Icons.favorite_rounded
-                      : Icons.favorite_border_rounded,
-                  color: isFav ? Colors.red : Colors.grey.shade400,
-                ),
-              ),
-            ),
-            const SizedBox(width: 12),
-            // Add to Cart button
-            Expanded(
-              child: ElevatedButton.icon(
-                onPressed: () {
-                  context.read<CartProvider>().addItem(
-                        CartItem(
-                          id: p.id,
-                          name: p.name,
-                          brand: p.brand,
-                          price: p.price,
-                          category: p.category,
-                          quantity: _quantity,
-                        ),
-                      );
-                  final productId = int.tryParse(p.id);
-                  if (productId != null && productId > 0) {
-                    ApiService.addToCart(
-                      productId: productId,
-                      quantity: _quantity,
-                    ).catchError((_) {});
-                  }
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('${p.name} added to cart!'),
-                      backgroundColor: AppColor.blueColor,
-                      duration: const Duration(seconds: 2),
-                      action: SnackBarAction(
-                        label: 'View Cart',
-                        textColor: Colors.white,
-                        onPressed: () => Navigator.pushNamed(
-                            context, CartScreen.routeName),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: () => _addToCart(context, l10n),
+                    icon: const Icon(Icons.shopping_cart_outlined,
+                        color: Colors.white, size: 20),
+                    label: Text(
+                      '${l10n.addToCart}  ·  ${(p.price * _quantity).toInt()} EGP',
+                      style: AppStyle.regular.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 15,
                       ),
                     ),
-                  );
-                },
-                icon: const Icon(Icons.shopping_cart_outlined,
-                    color: Colors.white, size: 20),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColor.blueColor,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      elevation: 0,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: _isCheckingOut ? null : () => _proceedToCheckout(context, l10n),
+                icon: _isCheckingOut
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2,
+                        ),
+                      )
+                    : const Icon(Icons.payment, color: Colors.white, size: 20),
                 label: Text(
-                  'Add to Cart  ·  ${(p.price * _quantity).toInt()} EGP',
+                  l10n.proceedToCheckout,
                   style: AppStyle.regular.copyWith(
                     color: Colors.white,
                     fontWeight: FontWeight.w700,
@@ -356,7 +370,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                   ),
                 ),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColor.blueColor,
+                  backgroundColor: const Color(0xFF10B981),
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(14),
@@ -369,6 +383,63 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
         ),
       ),
     );
+  }
+
+  Future<void> _syncCartApi() async {
+    final productId = int.tryParse(p.id);
+    if (productId != null && productId > 0) {
+      await ApiService.addToCart(
+        productId: productId,
+        quantity: _quantity,
+      );
+    }
+  }
+
+  void _addToCart(BuildContext context, AppLocalizations l10n,
+      {bool showSnackBar = true}) {
+    context.read<CartProvider>().addItem(
+          CartItem(
+            id: p.id,
+            name: p.name,
+            brand: p.brand,
+            price: p.price,
+            category: p.category,
+            imageUrl: p.imageUrl,
+            quantity: _quantity,
+          ),
+        );
+    _syncCartApi().catchError((_) {});
+    if (showSnackBar) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('${p.name} ${l10n.addedToCart}'),
+          backgroundColor: AppColor.blueColor,
+          duration: const Duration(seconds: 2),
+          action: SnackBarAction(
+            label: l10n.viewCart,
+            textColor: Colors.white,
+            onPressed: () =>
+                Navigator.pushNamed(context, CartScreen.routeName),
+          ),
+        ),
+      );
+    }
+  }
+
+  Future<void> _proceedToCheckout(
+      BuildContext context, AppLocalizations l10n) async {
+    setState(() => _isCheckingOut = true);
+    try {
+      _addToCart(context, l10n, showSnackBar: false);
+      await _syncCartApi();
+      if (!mounted) return;
+      final completed = await CheckoutHelper.proceedToPaymob(context);
+      if (completed && mounted) {
+        context.read<CartProvider>().clear();
+      }
+    } finally {
+      if (mounted) setState(() => _isCheckingOut = false);
+    }
   }
 
   // ── Helpers ────────────────────────────────────────────────────────────────

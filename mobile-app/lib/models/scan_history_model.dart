@@ -19,11 +19,18 @@ class ScanHistoryItem {
       createdAt: DateTime.tryParse(
               json['createdAt']?.toString() ?? json['created_at']?.toString() ?? '') ??
           DateTime.now(),
-      result: json['result'] != null
-          ? ScanResultModel.fromJson(json['result'])
+      result: json['result'] is Map
+          ? ScanResultModel.fromStoredJson(
+              Map<String, dynamic>.from(json['result'] as Map))
           : ScanResultModel.fromJson(json),
     );
   }
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'createdAt': createdAt.toIso8601String(),
+        'result': result.toJson(),
+      };
 
   // Display date formatted
   String get formattedDate {

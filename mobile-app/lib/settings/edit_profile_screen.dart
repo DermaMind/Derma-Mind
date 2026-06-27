@@ -2,7 +2,9 @@ import 'package:dermamind_app/Authentication/login.dart';
 import 'package:dermamind_app/providers/auth_provider.dart';
 import 'package:dermamind_app/utils/app_color.dart';
 import 'package:dermamind_app/utils/app_style.dart';
+import 'package:dermamind_app/utils/profile_avatar.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 
 class EditProfileScreen extends StatefulWidget {
@@ -20,6 +22,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
   // ── Gender selection ────────────────────────────────────────────────────────
   bool _isFemale = true;
+  String? _pickedImagePath;
+  final ImagePicker _picker = ImagePicker();
 
   // ── Form controllers ────────────────────────────────────────────────────────
   final _nameCtrl = TextEditingController();
@@ -155,6 +159,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                   phone: _phoneCtrl.text.trim(),
                                   dob: _dobCtrl.text.trim(),
                                   gender: _isFemale ? 'Female' : 'Male',
+                                  imagePath: _pickedImagePath,
                                 );
                             if (!context.mounted) return;
                             ScaffoldMessenger.of(context).showSnackBar(
@@ -289,41 +294,37 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             ],
           ),
           const SizedBox(height: 12),
-          // Avatar with camera badge
-          Stack(
-            children: [
-              Container(
-                width: 80,
-                height: 80,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Colors.white.withValues(alpha: 0.2),
-                  border: Border.all(color: Colors.white, width: 3),
+          GestureDetector(
+            onTap: _pickProfileImage,
+            child: Stack(
+              children: [
+                ProfileAvatar(
+                  networkUrl: auth.profileImageUrl,
+                  localPath: _pickedImagePath,
+                  size: 80,
                 ),
-                child:
-                    const Icon(Icons.person, color: Colors.white, size: 44),
-              ),
-              Positioned(
-                bottom: 0,
-                right: 0,
-                child: Container(
-                  width: 26,
-                  height: 26,
-                  decoration: const BoxDecoration(
-                    color: AppColor.blueColor,
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black26,
-                        blurRadius: 4,
-                      ),
-                    ],
+                Positioned(
+                  bottom: 0,
+                  right: 0,
+                  child: Container(
+                    width: 26,
+                    height: 26,
+                    decoration: const BoxDecoration(
+                      color: AppColor.blueColor,
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black26,
+                          blurRadius: 4,
+                        ),
+                      ],
+                    ),
+                    child: const Icon(Icons.camera_alt,
+                        color: Colors.white, size: 14),
                   ),
-                  child: const Icon(Icons.camera_alt,
-                      color: Colors.white, size: 14),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
           const SizedBox(height: 10),
           Text(
@@ -342,6 +343,50 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         ],
       ),
     );
+  }
+
+  Future<void> _pickProfileImage() async {
+    final source = await showModalBottomSheet<ImageSource>(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.photo_library_outlined),
+              title: const Text('Choose from gallery'),
+              onTap: () => Navigator.pop(ctx, ImageSource.gallery),
+            ),
+            ListTile(
+              leading: const Icon(Icons.camera_alt_outlined),
+              title: const Text('Take a photo'),
+              onTap: () => Navigator.pop(ctx, ImageSource.camera),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    if (source == null || !mounted) return;
+
+    try {
+      final file = await _picker.pickImage(
+        source: source,
+        imageQuality: 85,
+        maxWidth: 800,
+      );
+      if (file != null && mounted) {
+        setState(() => _pickedImagePath = file.path);
+      }
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Could not pick image')),
+      );
+    }
   }
 
   // ── Gender selector ────────────────────────────────────────────────────────
