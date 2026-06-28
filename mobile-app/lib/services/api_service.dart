@@ -65,23 +65,37 @@ class ApiService {
   }
 
   static Future<ApiResponse<AuthResponseModel>> login({
-    required String email,
-    required String password,
-  }) async {
-    try {
-      final response = await http.post(
-        Uri.parse('$baseUrl/api/Auth/login'),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({'email': email, 'password': password}),
-      );
-      return _handleResponse(
-        response,
-            (json) => AuthResponseModel.fromJson(json as Map<String, dynamic>),
-      );
-    } catch (e) {
-      return ApiResponse.error(_exceptionMessage(e));
-    }
+  required String email,
+  required String password,
+}) async {
+  try {
+    final body = {
+      'email': email,
+      'password': password,
+    };
+
+    debugPrint("========== LOGIN ==========");
+    debugPrint("URL => $baseUrl/api/Auth/login");
+    debugPrint("REQUEST => ${jsonEncode(body)}");
+
+    final response = await http.post(
+      Uri.parse('$baseUrl/api/Auth/login'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode(body),
+    );
+
+    debugPrint("STATUS => ${response.statusCode}");
+    debugPrint("BODY => ${response.body}");
+
+    return _handleResponse(
+      response,
+      (json) => AuthResponseModel.fromJson(json as Map<String, dynamic>),
+    );
+  } catch (e) {
+    debugPrint("LOGIN ERROR => $e");
+    return ApiResponse.error(_exceptionMessage(e));
   }
+}
 
   static Future<ApiResponse<bool>> forgetPassword(String email) async {
     try {
