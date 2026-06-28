@@ -383,6 +383,10 @@ class ApiService {
         headers: _headers,
         body: jsonEncode({'selectedOptionIds': selectedOptionIds}),
       );
+      debugPrint("========== SUBMIT ==========");
+      debugPrint("URL => ${response.request?.url}");
+      debugPrint("STATUS => ${response.statusCode}");
+      debugPrint("BODY => ${response.body}");
       return _handleResponse(
         response,
         (json) => SkinTestResultModel.fromJson(json),
@@ -399,6 +403,11 @@ class ApiService {
       final response = await http.get(
         Uri.parse('$baseUrl/api/SkinTest/my-result?lang=$lang'),
         headers: _authHeaders);
+
+      debugPrint("========== MY RESULT ==========");
+      debugPrint("URL => ${response.request?.url}");
+      debugPrint("STATUS => ${response.statusCode}");
+      debugPrint("BODY => ${response.body}");
 
       return _handleResponse(
         response,

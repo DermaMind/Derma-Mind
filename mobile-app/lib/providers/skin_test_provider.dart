@@ -250,6 +250,7 @@ class SkinTestProvider extends ChangeNotifier {
     }
 
     final token = await PrefsHelper.getToken();
+    debugPrint("TOKEN => $token");
     if (token == null || token.isEmpty) {
       return 'Please sign in to complete the skin test.';
     }
